@@ -8,7 +8,7 @@
 
 **Input**: User description: "$ARGUMENTS"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 <!--
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
@@ -78,7 +78,7 @@
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 <!--
   ACTION REQUIRED: The content in this section represents placeholders.
@@ -93,17 +93,29 @@
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
 
-*Example of marking unclear requirements:*
+_Example of marking unclear requirements:_
 
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
-## Success Criteria *(mandatory)*
+## Non-Functional Requirements _(mandatory)_
+
+- **NFR-001 Financial Integrity**: Define precision strategy for money calculations and
+  timezone/date handling rules for this feature.
+- **NFR-002 Security & Privacy**: Define sensitive data handling, validation boundaries,
+  and client-side secret exposure constraints.
+- **NFR-003 Accessibility**: Define keyboard navigation, labeling, and assistive-tech
+  expectations for affected user journeys.
+- **NFR-004 Observability**: Define required logs/telemetry/error events needed to
+  operate and debug this feature in production.
+- **NFR-005 Performance**: Define measurable latency/render targets for the critical path.
+
+## Success Criteria _(mandatory)_
 
 <!--
   ACTION REQUIRED: Define measurable success criteria.
