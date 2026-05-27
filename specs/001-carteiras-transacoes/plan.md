@@ -1,122 +1,180 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Gestão de Carteiras, Contas e Transações
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Branch**: `001-create-feature-branch` | **Date**: 2026-05-27 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
+**Input**: Feature specification from [spec.md](spec.md)
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+React Finance Platform é uma aplicação web de gestão financeira integrada que permite ao usuário gerenciar até 2 carteiras com contas, cartões e transações (entradas, saídas e transferências). Suporta colaboração segura via convites por email com controle de permissões granulares (leitura, edição, operacional). Cada transação possui status (Efetivada/Pendente), e as transações recorrentes (diárias, semanais, mensais, anuais) aplicam-se apenas a entradas e saídas, nunca a transferências. O saldo é dual: saldo principal (apenas Efetivada) e saldo projetado (Efetivada + Pendente), garantindo precisão monetária e rastreabilidade de todas as operações.
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
+**Language/Version**: React 19+ com TypeScript strict (5.5+)
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Primary Dependencies**: 
+- React Router 7+ (roteamento e navegação)
+- TanStack Query v5+ (estado assíncrono e sincronização)
+- React Hook Form 7+ + Zod 3+ (formulários e validação)
+- decimal.js 10+ (cálculos monetários com precisão)
+- MSW 2+ (mock de API e testes)
+- Vitest 1+ + React Testing Library (testes)
+- Playwright 1.40+ (E2E)
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Storage**: LocalStorage + JSON fixtures versionadas para MVP; integração com backend REST será feita após stabilização da API de contratos
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Testing**: Vitest + React Testing Library (unit/integration), Playwright (end-to-end)
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Target Platform**: Web browser moderno (Chrome 120+, Firefox 121+, Safari 17+, Edge 120+); responsive mobile-first
 
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: Web application (SPA - Single Page Application)
 
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+**Performance Goals**: 
+- Cálculo de saldos: < 100ms para carteira com até 1000 transações
+- Renderização de listas: 60 fps com scroll em históricos de até 500 transações visíveis
+- Validação de formulários: resposta instantânea (<50ms) em mudanças de campo
 
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+**Constraints**: 
+- Máximo 2 carteiras por usuário (regra de negócio rígida)
+- Valores monetários sempre com 2 casas decimais (BRL)
+- Fusos horários explícitos em todas as datas (ISO-8601 com TZ)
+- Auditoria imutável de todas as ações CRUD críticas
+- Sem permissão de exclusão de carteira para convidados
 
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
-
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Scale/Scope**: 
+- ~15-20 telas principais (wallets, accounts, cards, transactions, collaborators, settings)
+- ~40-50 componentes reutilizáveis
+- ~30-40 hooks customizados para lógica de negócio
+- ~100-150 testes unitários + integração, 10-15 jornadas E2E
 
 ## Constitution Check
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-- Financial integrity gate: money/date modeling strategy is explicit (decimal-safe arithmetic,
-  timezone handling, reconciliation rules).
-- React architecture gate: state ownership is defined (server state, form state, client/global
-  state) and boundary validation approach is documented.
-- Routing contract gate: route map includes auth/guard rules, error boundaries, and deep-link
-  behavior expectations.
-- Quality gate: test strategy covers unit, integration, and end-to-end flows for critical journeys.
-- Security/a11y/observability gate: risks, accessibility baseline, and telemetry/error strategy
-  are documented.
+✅ **Financial integrity gate**: Uso de `decimal.js` para toda operação monetária (somas, subtrações, recálculos). Dois agregadores por carteira: `mainBalance` (Efetivada) e `projectedBalance` (Efetivada + Pendente). Reconciliação determinística com recálculo completo após exclusões hard-delete. Datas em ISO-8601 com TZ explícito.
+
+✅ **React architecture gate**: 
+- Server state em TanStack Query (sincronização com MSW/backend)
+- Form state em React Hook Form
+- Global/UI state em Context (minimal) ou Zustand se necessário
+- Validação em fronteiras com schemas Zod compartilhados
+- Componentes focados em apresentação, regras de negócio em hooks/services
+
+✅ **Routing contract gate**: 
+- Mapa de rotas por carteira: `/wallets/:walletId/...`
+- Autenticação simulada em dev (token em localStorage)
+- Guards por role (read/edit/operate) centralizados em helpers
+- Error boundaries por segmento
+- Deep-link e back/forward estável
+- 404 tratado explicitamente
+
+✅ **Quality gate**: 
+- Unit tests: cálculos de saldo, recálculo pós-exclusão, validações de permissão
+- Integration tests: formulários + roteamento + TanStack Query + MSW handlers
+- E2E tests: jornadas P1/P2/P3 com dados mockados
+- CI gates: typecheck, lint, testes, build obrigatórios antes de merge
+
+✅ **Security/a11y/observability gate**: 
+- Dados sensíveis minimizados no cliente; auth via simulação (dev) ou JWT (produção)
+- Validação e sanitização de entradas em fronteiras
+- WCAG 2.2 AA: navegação por teclado, labels semânticos, contrast ratio
+- Telemetria estruturada de ações críticas (criar/editar/deletar transação, convites, alterações de permissão)
+- Erro centralizado em logger com stack trace
 
 ## Project Structure
 
 ### Documentation (this feature)
 
-```text
-specs/[###-feature]/
-├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
-└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
+```
+specs/001-carteiras-transacoes/
+├── plan.md              # Este arquivo
+├── research.md          # Decisões técnicas: decimal.js, saldo dual, MSW, permissões, roteamento, validação, testes
+├── data-model.md        # Entidades: User, Wallet, WalletPermission, Account, Card, Transaction, Refund
+├── quickstart.md        # Guia de início rápido para desenvolvimento local
+├── spec.md              # Requisitos funcionais, histórias de usuário, edge cases
+├── contracts/
+│   └── frontend-api.yaml  # Contrato de API: endpoints, payloads, respostas, erros
+├── tasks.md             # Tarefas executáveis (será gerado por /speckit.tasks)
+└── checklists/
+    ├── requirements.md   # Checklist de requisitos
+    └── quality.md        # Checklist de qualidade
 ```
 
 ### Source Code (repository root)
 
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
-
-```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
+```
+react-finance-platform/
 ├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+│   ├── components/           # Componentes React reutilizáveis
+│   │   ├── common/          # Componentes comuns (Button, Modal, Input, etc.)
+│   │   ├── layout/          # Layout (Header, Sidebar, MainContent)
+│   │   └── features/        # Componentes específicos por feature
+│   │       ├── wallets/
+│   │       ├── accounts/
+│   │       ├── cards/
+│   │       ├── transactions/
+│   │       └── collaborators/
+│   ├── pages/               # Páginas (1:1 com rotas)
+│   │   ├── WalletsPage.tsx
+│   │   ├── AccountsPage.tsx
+│   │   ├── TransactionsPage.tsx
+│   │   └── [...]
+│   ├── hooks/               # Hooks customizados
+│   │   ├── useWallets.ts
+│   │   ├── useAccounts.ts
+│   │   ├── useTransactions.ts
+│   │   ├── usePermissions.ts
+│   │   └── [...]
+│   ├── services/            # Lógica de negócio
+│   │   ├── balanceCalculator.ts   # Cálculos com decimal.js
+│   │   ├── transactionRecalculator.ts
+│   │   ├── permissionHelper.ts
+│   │   └── [...]
+│   ├── schemas/             # Validação com Zod
+│   │   ├── transactionSchema.ts
+│   │   ├── accountSchema.ts
+│   │   └── [...]
+│   ├── types/               # TypeScript tipos globais
+│   │   └── domain.ts
+│   ├── api/                 # Cliente HTTP e handlers MSW
+│   │   ├── client.ts
+│   │   ├── mocks/
+│   │   │   ├── handlers.ts
+│   │   │   └── fixtures/
+│   │   │       ├── happy-path.json
+│   │   │       ├── permission-denied.json
+│   │   │       └── [...]
+│   │   └── queries.ts
+│   ├── router/              # Configuração de rotas
+│   │   ├── routes.tsx
+│   │   └── guards.ts
+│   ├── store/               # Estado global (Context ou Zustand)
+│   │   └── authStore.ts
+│   ├── App.tsx
+│   └── main.tsx
+├── tests/
+│   ├── unit/                # Testes unitários
+│   │   ├── balanceCalculator.test.ts
+│   │   ├── permissionHelper.test.ts
+│   │   └── [...]
+│   ├── integration/         # Testes de integração
+│   │   ├── walletFlow.test.ts
+│   │   ├── transactionFlow.test.ts
+│   │   └── [...]
+│   └── e2e/                 # Testes end-to-end (Playwright)
+│       ├── userJourney.spec.ts
+│       ├── collaborationFlow.spec.ts
+│       └── [...]
+├── public/                  # Assets estáticos
+├── package.json
+├── tsconfig.json
+├── vitest.config.ts
+├── playwright.config.ts
+└── README.md
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Arquitetura de SPA moderna com separação clara entre componentes de apresentação, hooks customizados, serviços de negócio e schemas de validação. Testes organizados por camada (unit, integration, e2e). Estado assíncrono centralizado em TanStack Query, estado local em React Hook Form, estado global mínimo em Context/Zustand.
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
-
-| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
-| -------------------------- | ------------------ | ------------------------------------ |
-| [e.g., 4th project]        | [current need]     | [why 3 projects insufficient]        |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient]  |
+Sem violações à constitution que exijam justificação. Todas as decisões técnicas estão alinhadas aos 5 princípios e à baseline aprovada.
