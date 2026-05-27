@@ -10,25 +10,25 @@ paths:
     get:
       summary: Retorna sessão autenticada mockada
       responses:
-        '200':
+        "200":
           description: Sessão mock ativa
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Session'
+                $ref: "#/components/schemas/Session"
 
   /wallets:
     get:
       summary: Lista carteiras do usuário
       responses:
-        '200':
+        "200":
           description: Lista de carteiras
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Wallet'
+                  $ref: "#/components/schemas/Wallet"
     post:
       summary: Cria carteira (limite 2)
       requestBody:
@@ -42,152 +42,152 @@ paths:
                 name:
                   type: string
       responses:
-        '201':
+        "201":
           description: Carteira criada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Wallet'
-        '422':
+                $ref: "#/components/schemas/Wallet"
+        "422":
           description: Limite de duas carteiras excedido
 
   /wallets/{walletId}/accounts:
     get:
       summary: Lista contas da carteira
       parameters:
-        - $ref: '#/components/parameters/WalletId'
+        - $ref: "#/components/parameters/WalletId"
       responses:
-        '200':
+        "200":
           description: Lista de contas
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Account'
+                  $ref: "#/components/schemas/Account"
     post:
       summary: Cria conta
       parameters:
-        - $ref: '#/components/parameters/WalletId'
+        - $ref: "#/components/parameters/WalletId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateAccountRequest'
+              $ref: "#/components/schemas/CreateAccountRequest"
       responses:
-        '201':
+        "201":
           description: Conta criada
 
   /wallets/{walletId}/cards:
     get:
       summary: Lista cartões da carteira
       parameters:
-        - $ref: '#/components/parameters/WalletId'
+        - $ref: "#/components/parameters/WalletId"
       responses:
-        '200':
+        "200":
           description: Lista de cartões
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Card'
+                  $ref: "#/components/schemas/Card"
     post:
       summary: Cria cartão com conta de débito vinculada
       parameters:
-        - $ref: '#/components/parameters/WalletId'
+        - $ref: "#/components/parameters/WalletId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCardRequest'
+              $ref: "#/components/schemas/CreateCardRequest"
       responses:
-        '201':
+        "201":
           description: Cartão criado
-        '422':
+        "422":
           description: Conta de débito inválida/inativa
 
   /wallets/{walletId}/transactions:
     get:
       summary: Lista transações da carteira
       parameters:
-        - $ref: '#/components/parameters/WalletId'
+        - $ref: "#/components/parameters/WalletId"
         - in: query
           name: status
           schema:
             type: string
             enum: [effective, pending]
       responses:
-        '200':
+        "200":
           description: Lista de transações
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Transaction'
+                  $ref: "#/components/schemas/Transaction"
     post:
       summary: Cria transação
       parameters:
-        - $ref: '#/components/parameters/WalletId'
+        - $ref: "#/components/parameters/WalletId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateTransactionRequest'
+              $ref: "#/components/schemas/CreateTransactionRequest"
       responses:
-        '201':
+        "201":
           description: Transação criada
-        '422':
+        "422":
           description: Violação de regra de domínio
 
   /wallets/{walletId}/permissions:
     get:
       summary: Lista permissões por e-mail convidado
       parameters:
-        - $ref: '#/components/parameters/WalletId'
+        - $ref: "#/components/parameters/WalletId"
       responses:
-        '200':
+        "200":
           description: Lista de permissões
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/WalletPermission'
+                  $ref: "#/components/schemas/WalletPermission"
     post:
       summary: Cria ou atualiza convite/permissão
       parameters:
-        - $ref: '#/components/parameters/WalletId'
+        - $ref: "#/components/parameters/WalletId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpsertPermissionRequest'
+              $ref: "#/components/schemas/UpsertPermissionRequest"
       responses:
-        '200':
+        "200":
           description: Convite atualizado
-        '201':
+        "201":
           description: Convite criado
 
   /wallets/{walletId}/audit-events:
     get:
       summary: Lista eventos de auditoria da carteira
       parameters:
-        - $ref: '#/components/parameters/WalletId'
+        - $ref: "#/components/parameters/WalletId"
       responses:
-        '200':
+        "200":
           description: Lista de eventos
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AuditEvent'
+                  $ref: "#/components/schemas/AuditEvent"
 
 components:
   parameters:
@@ -303,7 +303,8 @@ components:
 
     AuditEvent:
       type: object
-      required: [id, walletId, actorUserId, action, entityType, entityId, occurredAt]
+      required:
+        [id, walletId, actorUserId, action, entityType, entityId, occurredAt]
       properties:
         id:
           type: string

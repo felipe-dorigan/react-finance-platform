@@ -1,10 +1,12 @@
 # Quickstart: Frontend React com Mock de Dados
 
 ## Pré-requisitos
+
 - Node.js 20+
 - npm 10+
 
 ## Setup inicial (quando iniciar implementação)
+
 1. Criar app React + TypeScript strict (Vite).
 2. Instalar dependências base:
    - react-router-dom
@@ -21,6 +23,7 @@
    - Playwright
 
 ## Estrutura mínima esperada
+
 - src/app/router
 - src/features/{wallets,transactions,accounts,cards,permissions,audit}
 - src/services/{api,mock}
@@ -28,6 +31,7 @@
 - tests/{unit,integration,e2e}
 
 ## Fluxo de execução local
+
 1. Iniciar MSW no bootstrap da aplicação.
 2. Carregar sessão mock autenticada.
 3. Navegar em rota padrão de carteira (`/wallets/:walletId/dashboard`).
@@ -38,11 +42,13 @@
    - Bloqueios de exclusão e recálculo
 
 ## Critérios de pronto para implementação
+
 - Contrato de API mock definido em `contracts/frontend-api.yaml`.
 - Data model aprovado em `data-model.md`.
 - Estratégia de testes alinhada à constitution.
 
 ## Comandos esperados (alvo)
+
 - `npm run dev`
 - `npm run test`
 - `npm run test:e2e`
