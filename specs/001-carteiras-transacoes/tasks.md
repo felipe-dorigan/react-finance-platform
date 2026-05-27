@@ -129,6 +129,8 @@
 - [ ] T049 Otimizar performance de listagem principal e memoização de filtros em src/features/transactions/transaction-list-performance.ts
 - [ ] T050 Validar e completar eventos de telemetria/auditoria nas jornadas críticas em src/features/audit/audit-event-map.ts
 - [ ] T051 Validar fluxo completo do quickstart e atualizar instruções finais em specs/001-carteiras-transacoes/quickstart.md
+- [ ] T052 [P] Configurar pipeline de CI com jobs de typecheck, lint, testes (unit+integration) e build em .github/workflows/ci.yml — gate obrigatório de merge exigido pela constitution
+- [ ] T053 [P] Criar testes unit/integration de imutabilidade de logs de auditoria pós hard-delete de conta e de cartão em tests/unit/audit-immutability.spec.ts e tests/integration/audit-log-hard-delete.spec.tsx
 
 ---
 
@@ -140,6 +142,8 @@
 - Foundational (Phase 2): depende da conclusão do Setup e bloqueia todas as histórias.
 - User Stories (Phase 3-5): dependem da conclusão da Foundational.
 - Polish (Phase 6): depende da conclusão das histórias selecionadas.
+- T052 (CI): pode ser configurado em paralelo com Phase 1 sem bloquear histórias; deve estar funcional antes do merge.
+- T053 (audit-immutability): depende de T014 (audit-service) e T036/T037 (hard-delete); pode rodar em paralelo com T047.
 
 ### User Story Dependencies
 

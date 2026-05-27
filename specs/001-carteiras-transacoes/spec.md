@@ -82,7 +82,7 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 ### Edge Cases
 
 - Transferência para a mesma conta de origem deve ser bloqueada com mensagem de validação.
-- Exclusão de conta ou cartão com transações associadas deve preservar histórico e impedir inconsistência de saldo.
+- Exclusão definitiva (hard-delete) de conta ou cartão remove todos os registros vinculados e dispara recálculo financeiro; apenas o arquivamento (soft-delete/inativação) preserva histórico sem alterar transações existentes.
 - Alteração de permissão de convidado durante sessão ativa deve refletir imediatamente as novas restrições.
 - Criação de transação recorrente sem data inicial válida deve ser bloqueada.
 - Convite para e-mail já convidado na mesma carteira deve ser tratado como atualização de permissão e não duplicação.

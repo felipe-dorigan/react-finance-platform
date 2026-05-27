@@ -24,7 +24,7 @@ Construir um frontend React para gestão financeira por carteira (limite de 2 ca
 
 **Performance Goals**: listagem principal de transações por carteira em <= 2s (cenário padrão mock), interações de formulário com feedback em < 100ms
 
-**Constraints**: sem backend nesta fase; limite rígido de 2 carteiras; transferências sem recorrência; campos condicionais de período (ocultar/limpar/reexibir vazio); contas/cartões inativos não selecionáveis
+**Constraints**: sem backend nesta fase; limite rígido de 2 carteiras; transferências sem recorrência; campos condicionais de período (ocultar/limpar/reexibir vazio); contas/cartões inativos não selecionáveis; hard-delete de conta/cartão remove todos os registros vinculados e dispara recálculo — diferente de arquivamento (inativação), que preserva histórico; logs de auditoria são imutáveis e MUST NOT ser removidos por hard-delete de negócio
 
 **Scale/Scope**: 1 app SPA, ~10-14 telas/visões, até 2 carteiras por usuário, centenas de transações mockadas por carteira
 
@@ -35,7 +35,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 - Financial integrity gate: PASS. Estratégia definida com `decimal.js` para cálculos monetários, datas ISO com timezone explícito, e regras de reconciliação para saldo principal/projetado e recálculo por carteira.
 - React architecture gate: PASS. Ownership definido: server state via TanStack Query (mesmo com mock), formulários via RHF + Zod, estado global mínimo via Zustand (sessão/filtros/UI).
 - Routing contract gate: PASS. Mapa de rotas com guard de autenticação simulada, rotas da carteira por ID, deep-links para visões de contas/cartões/transações/permissões e boundary de erro por árvore de rotas.
-- Quality gate: PASS. Estratégia com unit para regras financeiras, integration para fluxos de formulário/estado/roteamento e e2e para jornadas críticas da spec.
+- Quality gate: PASS. Estratégia com unit para regras financeiras (incluindo imutabilidade de logs pós hard-delete), integration para fluxos de formulário/estado/roteamento e e2e para jornadas críticas da spec. Pipeline de CI (GitHub Actions ou equivalente) MUST bloquear merge em falha de typecheck, lint, testes ou build — entrega de CI é obrigatória nesta feature, com tarefa dedicada em tasks.md.
 - Security/a11y/observability gate: PASS. Sem segredos no cliente, validação de entrada em formulários/schemas, baseline WCAG 2.2 AA e eventos de auditoria/telemetria estruturados para ações críticas.
 
 ## Phase 0: Research Plan
@@ -117,9 +117,12 @@ tests/
 - Financial integrity gate: PASS após modelagem de entidades e contratos (saldo principal/projetado + recálculo por carteira explicitados).
 - React architecture gate: PASS após definição de ownership no plano e no quickstart.
 - Routing contract gate: PASS com rotas e guards definidos no quickstart e contratos.
-- Quality gate: PASS com matriz de testes alinhada ao quickstart.
+- Quality gate: PASS com matriz de testes alinhada ao quickstart e com pipeline de CI configurado para bloquear merge em falha de typecheck, lint, testes ou build (tarefa T052 em tasks.md).
 - Security/a11y/observability gate: PASS com eventos auditáveis e baseline de acessibilidade descritos.
 
 ## Complexity Tracking
 
-Sem violações da constitution nesta fase de planejamento.
+Correções aplicadas:
+- Constraint de hard-delete vs arquivamento explicitada: exclusão definitiva remove registros e dispara recálculo; inativação preserva histórico.
+- Quality gate atualizado: CI obrigatório com bloqueio de merge em typecheck, lint, testes e build.
+- Imutabilidade de logs de auditoria pós hard-delete adicionada como regra explícita de constraint e de teste.
