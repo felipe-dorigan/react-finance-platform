@@ -1,0 +1,378 @@
+openapi: 3.0.3
+info:
+  title: React Finance Platform Mock API
+  version: 0.1.0
+  description: Contrato de API mock para a feature de carteiras, contas, cartões, transações e permissões.
+servers:
+  - url: /api
+paths:
+  /session:
+    get:
+      summary: Retorna sessão autenticada mockada
+      responses:
+        '200':
+          description: Sessão mock ativa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+
+  /wallets:
+    get:
+      summary: Lista carteiras do usuário
+      responses:
+        '200':
+          description: Lista de carteiras
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Wallet'
+    post:
+      summary: Cria carteira (limite 2)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Carteira criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+        '422':
+          description: Limite de duas carteiras excedido
+
+  /wallets/{walletId}/accounts:
+    get:
+      summary: Lista contas da carteira
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+      responses:
+        '200':
+          description: Lista de contas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+    post:
+      summary: Cria conta
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        '201':
+          description: Conta criada
+
+  /wallets/{walletId}/cards:
+    get:
+      summary: Lista cartões da carteira
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+      responses:
+        '200':
+          description: Lista de cartões
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+    post:
+      summary: Cria cartão com conta de débito vinculada
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCardRequest'
+      responses:
+        '201':
+          description: Cartão criado
+        '422':
+          description: Conta de débito inválida/inativa
+
+  /wallets/{walletId}/transactions:
+    get:
+      summary: Lista transações da carteira
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [effective, pending]
+      responses:
+        '200':
+          description: Lista de transações
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+    post:
+      summary: Cria transação
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransactionRequest'
+      responses:
+        '201':
+          description: Transação criada
+        '422':
+          description: Violação de regra de domínio
+
+  /wallets/{walletId}/permissions:
+    get:
+      summary: Lista permissões por e-mail convidado
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+      responses:
+        '200':
+          description: Lista de permissões
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WalletPermission'
+    post:
+      summary: Cria ou atualiza convite/permissão
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertPermissionRequest'
+      responses:
+        '200':
+          description: Convite atualizado
+        '201':
+          description: Convite criado
+
+  /wallets/{walletId}/audit-events:
+    get:
+      summary: Lista eventos de auditoria da carteira
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+      responses:
+        '200':
+          description: Lista de eventos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditEvent'
+
+components:
+  parameters:
+    WalletId:
+      in: path
+      name: walletId
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    Session:
+      type: object
+      required: [userId, email]
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+          format: email
+
+    Wallet:
+      type: object
+      required: [id, name, mainBalance, projectedBalance]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        mainBalance:
+          type: string
+        projectedBalance:
+          type: string
+
+    Account:
+      type: object
+      required: [id, walletId, name, status, balance]
+      properties:
+        id:
+          type: string
+        walletId:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+        balance:
+          type: string
+
+    Card:
+      type: object
+      required: [id, walletId, name, debitAccountId, status]
+      properties:
+        id:
+          type: string
+        walletId:
+          type: string
+        name:
+          type: string
+        debitAccountId:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+
+    Transaction:
+      type: object
+      required: [id, walletId, type, status, amount, date]
+      properties:
+        id:
+          type: string
+        walletId:
+          type: string
+        type:
+          type: string
+          enum: [income, expense, transfer]
+        status:
+          type: string
+          enum: [effective, pending]
+        amount:
+          type: string
+        date:
+          type: string
+          format: date-time
+        period:
+          type: string
+          nullable: true
+          enum: [daily, weekly, monthly, yearly]
+        sourceAccountId:
+          type: string
+          nullable: true
+        destinationAccountId:
+          type: string
+          nullable: true
+
+    WalletPermission:
+      type: object
+      required: [id, walletId, invitedEmail, role]
+      properties:
+        id:
+          type: string
+        walletId:
+          type: string
+        invitedEmail:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [read, edit, operate]
+
+    AuditEvent:
+      type: object
+      required: [id, walletId, actorUserId, action, entityType, entityId, occurredAt]
+      properties:
+        id:
+          type: string
+        walletId:
+          type: string
+        actorUserId:
+          type: string
+        action:
+          type: string
+        entityType:
+          type: string
+        entityId:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+
+    CreateAccountRequest:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [checking, savings, cash, other]
+
+    CreateCardRequest:
+      type: object
+      required: [name, debitAccountId]
+      properties:
+        name:
+          type: string
+        debitAccountId:
+          type: string
+
+    CreateTransactionRequest:
+      type: object
+      required: [type, status, amount, date]
+      properties:
+        type:
+          type: string
+          enum: [income, expense, transfer]
+        status:
+          type: string
+          enum: [effective, pending]
+        amount:
+          type: string
+        date:
+          type: string
+          format: date-time
+        period:
+          type: string
+          nullable: true
+          enum: [daily, weekly, monthly, yearly]
+        sourceAccountId:
+          type: string
+          nullable: true
+        destinationAccountId:
+          type: string
+          nullable: true
+
+    UpsertPermissionRequest:
+      type: object
+      required: [invitedEmail, role]
+      properties:
+        invitedEmail:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [read, edit, operate]
