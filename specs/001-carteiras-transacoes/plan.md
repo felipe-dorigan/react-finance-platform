@@ -1,128 +1,122 @@
-# Implementation Plan: Gestão de Carteiras, Contas e Transações
+# Implementation Plan: [FEATURE]
 
-**Branch**: `[001-create-feature-branch]` | **Date**: 2026-05-27 | **Spec**: `specs/001-carteiras-transacoes/spec.md`
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 
-**Input**: Feature specification from `specs/001-carteiras-transacoes/spec.md`
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+
+**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
 
 ## Summary
 
-Construir um frontend React para gestão financeira por carteira (limite de 2 carteiras por usuário), cobrindo CRUD de contas/cartões, transações (entrada, saída, transferência), compartilhamento por e-mail com matriz de permissões e trilha de auditoria, usando dados mockados (MSW + JSON local) e autenticação simulada. O desenho prioriza integridade financeira (saldo principal vs projetado), validações de domínio no cliente e testabilidade em camadas (unit, integration, e2e).
+[Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x (strict), React 19, Node 20 LTS
+<!--
+  ACTION REQUIRED: Replace the content in this section with the technical details
+  for the project. The structure here is presented in advisory capacity to guide
+  the iteration process.
+-->
 
-**Primary Dependencies**: React, React Router, TanStack Query, React Hook Form, Zod, MSW, decimal.js, date-fns, Zustand (escopo mínimo de UI/session)
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
 
-**Storage**: N/A (frontend-only); dados em mock (fixtures JSON + handlers MSW)
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 
-**Testing**: Vitest + Testing Library (unit/integration), Playwright (e2e)
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
-**Target Platform**: Navegadores modernos (Chrome, Edge, Firefox, Safari)
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
 
-**Project Type**: Web app frontend-only (SPA)
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
 
-**Performance Goals**: listagem principal de transações por carteira em <= 2s (cenário padrão mock), interações de formulário com feedback em < 100ms
+**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
 
-**Constraints**: sem backend nesta fase; limite rígido de 2 carteiras; transferências sem recorrência; campos condicionais de período (ocultar/limpar/reexibir vazio); contas/cartões inativos não selecionáveis; hard-delete de conta/cartão remove todos os registros vinculados e dispara recálculo — diferente de arquivamento (inativação), que preserva histórico; logs de auditoria são imutáveis e MUST NOT ser removidos por hard-delete de negócio
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
 
-**Scale/Scope**: 1 app SPA, ~10-14 telas/visões, até 2 carteiras por usuário, centenas de transações mockadas por carteira
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
+
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-- Financial integrity gate: PASS. Estratégia definida com `decimal.js` para cálculos monetários, datas ISO com timezone explícito, e regras de reconciliação para saldo principal/projetado e recálculo por carteira.
-- React architecture gate: PASS. Ownership definido: server state via TanStack Query (mesmo com mock), formulários via RHF + Zod, estado global mínimo via Zustand (sessão/filtros/UI).
-- Routing contract gate: PASS. Mapa de rotas com guard de autenticação simulada, rotas da carteira por ID, deep-links para visões de contas/cartões/transações/permissões e boundary de erro por árvore de rotas.
-- Quality gate: PASS. Estratégia com unit para regras financeiras (incluindo imutabilidade de logs pós hard-delete), integration para fluxos de formulário/estado/roteamento e e2e para jornadas críticas da spec. Pipeline de CI (GitHub Actions ou equivalente) MUST bloquear merge em falha de typecheck, lint, testes ou build — entrega de CI é obrigatória nesta feature, com tarefa dedicada em tasks.md.
-- Security/a11y/observability gate: PASS. Sem segredos no cliente, validação de entrada em formulários/schemas, baseline WCAG 2.2 AA e eventos de auditoria/telemetria estruturados para ações críticas.
-
-## Phase 0: Research Plan
-
-Research tasks derivados do contexto técnico:
-
-1. Práticas de `decimal.js` para saldo principal/projetado e recálculo determinístico por carteira.
-2. Estratégia de mock com MSW + fixtures para simular contratos de API e estados de erro.
-3. Padrão de modelagem de permissões de colaboração por carteira em frontend-only.
-4. Boas práticas de roteamento com guards/autorização em React Router.
-5. Estratégia de testes para regra de período condicional e exclusões com recálculo financeiro.
-
-Saída desta fase: `research.md` com decisões e alternativas.
-
-## Phase 1: Design & Contracts Plan
-
-1. Derivar entidades, relacionamentos, validações e transições em `data-model.md`.
-2. Definir contratos de interface consumidos pela SPA em `contracts/frontend-api.yaml`.
-3. Publicar fluxo de execução local com mocks e testes em `quickstart.md`.
-4. Atualizar referência de contexto do agente em `.github/copilot-instructions.md` para este plano.
-5. Revalidar Constitution Check após os artefatos de design.
-
-Saídas desta fase: `data-model.md`, `contracts/*`, `quickstart.md`, contexto do agente atualizado.
+- Financial integrity gate: money/date modeling strategy is explicit (decimal-safe arithmetic,
+  timezone handling, reconciliation rules).
+- React architecture gate: state ownership is defined (server state, form state, client/global
+  state) and boundary validation approach is documented.
+- Routing contract gate: route map includes auth/guard rules, error boundaries, and deep-link
+  behavior expectations.
+- Quality gate: test strategy covers unit, integration, and end-to-end flows for critical journeys.
+- Security/a11y/observability gate: risks, accessibility baseline, and telemetry/error strategy
+  are documented.
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/001-carteiras-transacoes/
-├── plan.md
-├── research.md
-├── data-model.md
-├── quickstart.md
-├── contracts/
-│   └── frontend-api.yaml
-└── tasks.md
+specs/[###-feature]/
+├── plan.md              # This file (/speckit.plan command output)
+├── research.md          # Phase 0 output (/speckit.plan command)
+├── data-model.md        # Phase 1 output (/speckit.plan command)
+├── quickstart.md        # Phase 1 output (/speckit.plan command)
+├── contracts/           # Phase 1 output (/speckit.plan command)
+└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
 ### Source Code (repository root)
 
+<!--
+  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
+  for this feature. Delete unused options and expand the chosen structure with
+  real paths (e.g., apps/admin, packages/something). The delivered plan must
+  not include Option labels.
+-->
+
 ```text
+# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
 src/
-├── app/
-│   ├── router/
-│   └── providers/
-├── pages/
-│   ├── wallets/
-│   ├── transactions/
-│   ├── accounts/
-│   ├── cards/
-│   └── collaborators/
-├── components/
-├── features/
-│   ├── wallets/
-│   ├── transactions/
-│   ├── accounts/
-│   ├── cards/
-│   ├── permissions/
-│   └── audit/
+├── models/
 ├── services/
-│   ├── api/
-│   └── mock/
-├── schemas/
-├── hooks/
-├── store/
-└── utils/
+├── cli/
+└── lib/
 
 tests/
-├── unit/
+├── contract/
 ├── integration/
-└── e2e/
+└── unit/
+
+# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+backend/
+├── src/
+│   ├── models/
+│   ├── services/
+│   └── api/
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-**Structure Decision**: Aplicação frontend única no root do repositório, com separação por feature + camadas de serviço/esquema para manter fronteiras de estado e facilitar testes.
-
-## Post-Design Constitution Re-Check
-
-- Financial integrity gate: PASS após modelagem de entidades e contratos (saldo principal/projetado + recálculo por carteira explicitados).
-- React architecture gate: PASS após definição de ownership no plano e no quickstart.
-- Routing contract gate: PASS com rotas e guards definidos no quickstart e contratos.
-- Quality gate: PASS com matriz de testes alinhada ao quickstart e com pipeline de CI configurado para bloquear merge em falha de typecheck, lint, testes ou build (tarefa T052 em tasks.md).
-- Security/a11y/observability gate: PASS com eventos auditáveis e baseline de acessibilidade descritos.
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
 
 ## Complexity Tracking
 
-Correções aplicadas:
-- Constraint de hard-delete vs arquivamento explicitada: exclusão definitiva remove registros e dispara recálculo; inativação preserva histórico.
-- Quality gate atualizado: CI obrigatório com bloqueio de merge em typecheck, lint, testes e build.
-- Imutabilidade de logs de auditoria pós hard-delete adicionada como regra explícita de constraint e de teste.
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
+| -------------------------- | ------------------ | ------------------------------------ |
+| [e.g., 4th project]        | [current need]     | [why 3 projects insufficient]        |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient]  |

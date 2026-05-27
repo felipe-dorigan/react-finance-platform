@@ -23,6 +23,10 @@
 - Q: Qual regra final para arquivamento versus exclusão? -> A: Opção B confirmada. Arquivamento preserva histórico; exclusão definitiva remove registros vinculados e recalcula a carteira afetada.
 - Q: O que acontece com logs de auditoria quando registros de negócio são excluídos? -> A: Logs de auditoria permanecem imutáveis e não são excluídos junto com os registros de negócio.
 - Q: Ao excluir conta definitivamente, como tratar transferências vinculadas? -> A: Opção B confirmada. Excluir entradas, saídas e transferências em que a conta era origem ou destino.
+- Q: Qual critério formal de desempenho para SC-005? -> A: Opção B confirmada. Aprovar se p90 <= 2s em 50 execuções no ambiente padrão.
+- Q: Qual escopo mínimo obrigatório da visualização consolidada (FR-015)? -> A: Opção B confirmada. Exibir saldo principal, saldo projetado, total de entradas, total de saídas e total de transferências no período selecionado.
+- Q: Como resolver a duplicação entre FR-020 e FR-020A? -> A: Opção A confirmada. Consolidar em um único requisito: ao selecionar transferência, o campo de período deve ser limpo e oculto.
+- Q: Como definir formalmente a consistência de histórico financeiro no FR-002? -> A: Opção B confirmada. Arquivamento não altera lançamentos históricos; hard-delete remove vínculos permitidos e dispara recálculo completo da carteira atual.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -100,7 +104,7 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 ### Functional Requirements
 
 - **FR-001**: O sistema MUST permitir ao usuário criar até duas carteiras financeiras por conta de usuário.
-- **FR-002**: O sistema MUST permitir CRUD de contas dentro de cada carteira, preservando consistência de histórico financeiro.
+- **FR-002**: O sistema MUST permitir CRUD de contas dentro de cada carteira, garantindo consistência de histórico financeiro da seguinte forma: arquivamento não altera lançamentos históricos; hard-delete remove vínculos permitidos e dispara recálculo completo da carteira atual.
 - **FR-003**: O sistema MUST permitir cadastro e manutenção de cartões vinculados à carteira.
 - **FR-004**: O sistema MUST permitir criar transações dos tipos entrada, saída e transferência.
 - **FR-005**: O sistema MUST restringir transferências para contas pertencentes à mesma carteira ativa.
@@ -114,13 +118,12 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 - **FR-013**: Independentemente da permissão concedida, convidados MUST NOT excluir carteira nem alterar configuração estrutural da carteira.
 - **FR-014**: O sistema MUST auditar todas as ações de CRUD de conta/cartão, criação/edição/exclusão de transações, mudanças de status Efetivada/Pendente, convites e alterações de permissão, distinguindo operações do dono e de convidados.
 - **FR-014A**: Registros de auditoria MUST ser imutáveis e MUST NOT ser removidos por exclusão de contas, cartões ou transações de negócio.
-- **FR-015**: O sistema MUST oferecer visualização consolidada das operações financeiras por carteira.
+- **FR-015**: O sistema MUST oferecer visualização consolidada das operações financeiras por carteira com, no mínimo, saldo principal, saldo projetado, total de entradas, total de saídas e total de transferências no período selecionado.
 - **FR-016**: O sistema MUST manter dois indicadores distintos de saldo por carteira: saldo principal e saldo projetado.
 - **FR-017**: Transações com status Pendente MUST impactar somente o saldo projetado.
 - **FR-018**: O saldo principal MUST ser atualizado apenas por transações com status Efetivada.
 - **FR-019**: Transações do tipo transferência MUST ser sempre pontuais e MUST NOT aceitar configuração de recorrência.
-- **FR-020**: No formulário de transação, ao selecionar o tipo transferência, o campo de período MUST ficar oculto.
-- **FR-020A**: Ao selecionar transferência, o campo de período MUST ser limpo e oculto.
+- **FR-020**: No formulário de transação, ao selecionar o tipo transferência, o campo de período MUST ser limpo e oculto.
 - **FR-020B**: Ao alternar de transferência para entrada ou saída, o campo de período MUST ser exibido vazio.
 - **FR-021**: Contas e cartões MUST suportar status ativo e inativo (arquivado).
 - **FR-022**: Registros inativos (arquivados) MUST ficar ocultos nas telas operacionais principais e MUST aparecer em aba de configurações com indicação de status.
@@ -151,7 +154,7 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 - **NFR-002 Security & Privacy**: Convites por e-mail e permissões devem ser aplicados por carteira, sem expor dados de outras carteiras do mesmo usuário.
 - **NFR-003 Accessibility**: Fluxos de cadastro e gestão de transações, contas, cartões e permissões devem ser operáveis por teclado e com rótulos semânticos claros.
 - **NFR-004 Observability**: Ações críticas (criação/edição/exclusão lógica, convite e mudança de permissão) devem gerar eventos auditáveis.
-- **NFR-005 Performance**: A listagem principal de transações por carteira deve carregar em até 2 segundos em condições normais de uso.
+- **NFR-005 Performance**: A listagem principal de transações por carteira deve carregar em até 2 segundos em condições normais de uso, com validação em ambiente padrão usando no mínimo 50 execuções e aprovação quando p90 <= 2s.
 
 ## Success Criteria _(mandatory)_
 
@@ -161,7 +164,7 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 - **SC-002**: 100% das transferências válidas entre contas da mesma carteira atualizam saldos de origem e destino sem divergência.
 - **SC-003**: 100% das tentativas de criação de terceira carteira são bloqueadas com mensagem clara de regra de limite.
 - **SC-004**: 100% das tentativas de convidado excluir carteira são bloqueadas com retorno explícito de permissão insuficiente.
-- **SC-005**: 90% das consultas do histórico de transações por carteira respondem em até 2 segundos em cenário padrão.
+- **SC-005**: Em cenário padrão, o histórico de transações por carteira é aprovado quando p90 do tempo de resposta é <= 2 segundos em amostra mínima de 50 execuções.
 - **SC-006**: 100% das transações pendentes alteram apenas o saldo projetado, sem alterar o saldo principal até efetivação.
 - **SC-007**: 100% das ações de convidados respeitam a matriz de permissões (leitura, leitura+edição, acesso total operacional) sem violação de poderes estruturais da carteira.
 - **SC-008**: 100% das transferências registradas são tratadas como transações pontuais sem recorrência.
