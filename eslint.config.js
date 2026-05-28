@@ -15,6 +15,7 @@ export default [
       'test-results/**',
       '.vite/**',
       'node_modules/**',
+      '**/*.min.js',
     ],
   },
   js.configs.recommended,

@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { walletQueryKeys } from '@/services/api/queryKeys';
-import { payCardExpense } from '@/features/expenses/expenseService';
+import { payCardExpense, type Expense } from '@/features/expenses/expenseService';
 
 type PayExpenseActionProps = {
   walletId: string;
   expenseId: string;
   expenseAmount: string;
   accounts: Array<{ id: string; name: string }>;
-  onSuccess?: () => void;
+  onSuccess?: (paidExpense: Expense) => void;
 };
 
 export function PayExpenseAction({
@@ -24,11 +24,11 @@ export function PayExpenseAction({
 
   const payExpenseMutation = useMutation({
     mutationFn: () => payCardExpense(walletId, expenseId, selectedAccountId),
-    onSuccess: async () => {
+    onSuccess: async (paidExpense) => {
       setFeedback('Despesa paga com sucesso.');
       setSelectedAccountId('');
       await queryClient.invalidateQueries({ queryKey: walletQueryKeys.expenses(walletId) });
-      onSuccess?.();
+      onSuccess?.(paidExpense);
     },
     onError: () => {
       setFeedback('Não foi possível pagar a despesa.');
@@ -43,7 +43,11 @@ export function PayExpenseAction({
       return;
     }
 
-    await payExpenseMutation.mutateAsync();
+    try {
+      await payExpenseMutation.mutateAsync();
+    } catch {
+      // onError already updates UI feedback for this interaction.
+    }
   };
 
   return (

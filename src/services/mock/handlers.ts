@@ -162,11 +162,59 @@ export const handlers = [
   }),
   http.post('/wallets/:walletId/transactions', async ({ request, params }) => {
     const payload = createTransactionRequestSchema.parse(await request.json());
+    const walletId = String(params.walletId);
+
+    const duplicate = data.transactions.find((transaction) => {
+      if (transaction.walletId !== walletId) {
+        return false;
+      }
+
+      const sameType = transaction.type === payload.type;
+      const sameAmount = transaction.amount === payload.amount;
+      const sameDate = transaction.date === payload.date;
+
+      const payloadPrimaryLinkId = payload.cardId ?? payload.sourceAccountId;
+      const payloadPrimaryLinkType = payload.cardId ? 'card' : 'account';
+      const transactionPrimaryLinkId = transaction.cardId ?? transaction.sourceAccountId;
+      const transactionPrimaryLinkType = transaction.cardId ? 'card' : 'account';
+
+      return (
+        sameType &&
+        sameAmount &&
+        sameDate &&
+        payloadPrimaryLinkId !== null &&
+        transactionPrimaryLinkId !== null &&
+        payloadPrimaryLinkType === transactionPrimaryLinkType &&
+        payloadPrimaryLinkId === transactionPrimaryLinkId
+      );
+    });
+
+    if (duplicate && !payload.duplicateConfirmation) {
+      return jsonOk(
+        {
+          code: 'POSSIBLE_DUPLICATE',
+          message: 'Possivel duplicidade detectada; confirme para persistir.',
+          duplicateCandidate: {
+            fingerprint: `${payload.amount}|${payload.date}|${payload.type}|${payload.cardId ?? payload.sourceAccountId}`,
+            walletId,
+            transactionType: payload.type,
+            amount: payload.amount,
+            date: payload.date,
+            primaryLinkType: payload.cardId ? 'card' : 'account',
+            primaryLinkId: payload.cardId ?? payload.sourceAccountId,
+            matchedTransactionId: duplicate.id,
+            detectedAt: new Date().toISOString(),
+          },
+        },
+        409,
+      );
+    }
+
     transactionSequence += 1;
 
     const nextTransaction = transactionSchema.parse({
       id: `tx-${transactionSequence}`,
-      walletId: String(params.walletId),
+      walletId,
       type: payload.type,
       status: payload.status,
       amount: payload.amount,

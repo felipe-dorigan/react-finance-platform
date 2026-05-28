@@ -1,9 +1,25 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Card } from '@/features/shared/types/domain';
 import { ExpenseList } from '@/features/expenses/components/ExpenseList';
 import type { Expense } from '@/features/expenses/expenseService';
+
+function renderExpenseList(props: Parameters<typeof ExpenseList>[0]) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <ExpenseList {...props} />
+    </QueryClientProvider>,
+  );
+}
 
 describe('expense list with card filter', () => {
   const mockWalletId = 'wallet-001';
@@ -25,6 +41,13 @@ describe('expense list with card filter', () => {
       walletId: mockWalletId,
       name: 'Crédito',
       debitAccountId: 'acc-002',
+      status: 'active',
+    },
+    {
+      id: 'card-003',
+      walletId: mockWalletId,
+      name: 'Virtual',
+      debitAccountId: 'acc-001',
       status: 'active',
     },
   ];
@@ -78,35 +101,32 @@ describe('expense list with card filter', () => {
   ];
 
   it('renderiza lista de despesas com status de pagamento', () => {
-    render(
-      <ExpenseList
-        expenses={mockExpenses}
-        cards={mockCards}
-        accounts={mockAccounts}
-        walletId={mockWalletId}
-      />,
-    );
+    renderExpenseList({
+      expenses: mockExpenses,
+      cards: mockCards,
+      accounts: mockAccounts,
+      walletId: mockWalletId,
+    });
 
     expect(screen.getByText('Despesas')).toBeInTheDocument();
     expect(screen.getByText('R$ 150.00')).toBeInTheDocument();
     expect(screen.getByText('R$ 200.00')).toBeInTheDocument();
     expect(screen.getByText('R$ 75.00')).toBeInTheDocument();
 
-    expect(screen.getAllByText('Não paga').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText('Paga')).toBeInTheDocument();
+    expect(screen.getByTestId('expense-status-exp-001')).toHaveTextContent('Não paga');
+    expect(screen.getByTestId('expense-status-exp-002')).toHaveTextContent('Paga');
+    expect(screen.getByTestId('expense-status-exp-003')).toHaveTextContent('Não paga');
   });
 
   it('filtra despesas por cartão selecionado', async () => {
     const user = userEvent.setup();
 
-    render(
-      <ExpenseList
-        expenses={mockExpenses}
-        cards={mockCards}
-        accounts={mockAccounts}
-        walletId={mockWalletId}
-      />,
-    );
+    renderExpenseList({
+      expenses: mockExpenses,
+      cards: mockCards,
+      accounts: mockAccounts,
+      walletId: mockWalletId,
+    });
 
     const filterSelect = screen.getByLabelText('Filtrar por cartão:');
 
@@ -122,14 +142,12 @@ describe('expense list with card filter', () => {
   it('exibe "Todas" para listar todas as despesas novamente', async () => {
     const user = userEvent.setup();
 
-    render(
-      <ExpenseList
-        expenses={mockExpenses}
-        cards={mockCards}
-        accounts={mockAccounts}
-        walletId={mockWalletId}
-      />,
-    );
+    renderExpenseList({
+      expenses: mockExpenses,
+      cards: mockCards,
+      accounts: mockAccounts,
+      walletId: mockWalletId,
+    });
 
     const filterSelect = screen.getByLabelText('Filtrar por cartão:');
 
@@ -147,18 +165,16 @@ describe('expense list with card filter', () => {
   it('mostra mensagem quando não há despesas para o filtro', async () => {
     const user = userEvent.setup();
 
-    render(
-      <ExpenseList
-        expenses={mockExpenses}
-        cards={mockCards}
-        accounts={mockAccounts}
-        walletId={mockWalletId}
-      />,
-    );
+    renderExpenseList({
+      expenses: mockExpenses,
+      cards: mockCards,
+      accounts: mockAccounts,
+      walletId: mockWalletId,
+    });
 
     const filterSelect = screen.getByLabelText('Filtrar por cartão:');
 
-    // Filtrar por um cartão que não existe nos dados
+    // Filtrar por um cartão sem despesas associadas
     await user.selectOptions(filterSelect, 'card-003');
 
     expect(screen.getByText('Nenhuma despesa encontrada para o filtro selecionado.'))
@@ -166,14 +182,12 @@ describe('expense list with card filter', () => {
   });
 
   it('mostra botão "Pagar" apenas para despesas não pagas', () => {
-    render(
-      <ExpenseList
-        expenses={mockExpenses}
-        cards={mockCards}
-        accounts={mockAccounts}
-        walletId={mockWalletId}
-      />,
-    );
+    renderExpenseList({
+      expenses: mockExpenses,
+      cards: mockCards,
+      accounts: mockAccounts,
+      walletId: mockWalletId,
+    });
 
     const payButtons = screen.getAllByRole('button', { name: 'Pagar' });
 
@@ -184,14 +198,12 @@ describe('expense list with card filter', () => {
   it('expande formulário de pagamento ao clicar em "Pagar"', async () => {
     const user = userEvent.setup();
 
-    render(
-      <ExpenseList
-        expenses={mockExpenses}
-        cards={mockCards}
-        accounts={mockAccounts}
-        walletId={mockWalletId}
-      />,
-    );
+    renderExpenseList({
+      expenses: mockExpenses,
+      cards: mockCards,
+      accounts: mockAccounts,
+      walletId: mockWalletId,
+    });
 
     const payButtons = screen.getAllByRole('button', { name: 'Pagar' });
     await user.click(payButtons[0]);
@@ -200,33 +212,13 @@ describe('expense list with card filter', () => {
     expect(screen.getByLabelText(/Formulário para pagar despesa/)).toBeInTheDocument();
   });
 
-  it('chama callback onExpensePaid após sucesso no pagamento', async () => {
-    const onExpensePaid = vi.fn();
-
-    render(
-      <ExpenseList
-        expenses={mockExpenses}
-        cards={mockCards}
-        accounts={mockAccounts}
-        walletId={mockWalletId}
-        onExpensePaid={onExpensePaid}
-      />,
-    );
-
-    // Nota: Este teste verificaria o callback após o pagamento real,
-    // mas isso depende da integração com a API e o componente PayExpenseAction.
-    // A verificação completa seria feita em T039.
-  });
-
   it('renderiza lista vazia quando não há despesas', () => {
-    render(
-      <ExpenseList
-        expenses={[]}
-        cards={mockCards}
-        accounts={mockAccounts}
-        walletId={mockWalletId}
-      />,
-    );
+    renderExpenseList({
+      expenses: [],
+      cards: mockCards,
+      accounts: mockAccounts,
+      walletId: mockWalletId,
+    });
 
     expect(screen.getByText('Nenhuma despesa cadastrada até o momento.'))
       .toBeInTheDocument();

@@ -2,7 +2,11 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { CreateTransactionInput } from '@/features/transactions/transactionService';
+import {
+  DuplicateConfirmationRequiredError,
+  type CreateTransactionInput,
+} from '@/features/transactions/transactionService';
+import { useDuplicateConfirmation } from '@/features/transactions/hooks/useDuplicateConfirmation';
 
 const transactionFormSchema = z
   .object({
@@ -52,7 +56,10 @@ const transactionFormSchema = z
 type TransactionFormValues = z.infer<typeof transactionFormSchema>;
 
 type TransactionFormProps = {
-  onSubmit: (payload: CreateTransactionInput) => Promise<void>;
+  onSubmit: (
+    payload: CreateTransactionInput,
+    options?: { duplicateConfirmation?: boolean },
+  ) => Promise<void>;
 };
 
 export function TransactionForm({ onSubmit }: TransactionFormProps) {
@@ -78,6 +85,18 @@ export function TransactionForm({ onSubmit }: TransactionFormProps) {
 
   const selectedType = watch('type');
 
+  const {
+    duplicateConfirmation,
+    hasPendingConfirmation,
+    askForConfirmation,
+    cancelConfirmation,
+    confirmAndPersist,
+  } = useDuplicateConfirmation<CreateTransactionInput>({
+    onConfirm: async (payload) => {
+      await onSubmit(payload, { duplicateConfirmation: true });
+    },
+  });
+
   useEffect(() => {
     if (selectedType === 'transfer') {
       setValue('period', null, { shouldDirty: true, shouldValidate: true });
@@ -85,7 +104,7 @@ export function TransactionForm({ onSubmit }: TransactionFormProps) {
   }, [selectedType, setValue]);
 
   const submit = handleSubmit(async (values) => {
-    await onSubmit({
+    const payload: CreateTransactionInput = {
       type: values.type,
       status: values.status,
       amount: values.amount,
@@ -94,7 +113,22 @@ export function TransactionForm({ onSubmit }: TransactionFormProps) {
       sourceAccountId: values.sourceAccountId,
       destinationAccountId: values.destinationAccountId,
       cardId: values.cardId,
-    });
+    };
+
+    try {
+      await onSubmit(payload);
+      cancelConfirmation();
+    } catch (error) {
+      if (error instanceof DuplicateConfirmationRequiredError) {
+        askForConfirmation(payload, {
+          message: error.message,
+          candidate: error.candidate,
+        });
+        return;
+      }
+
+      throw error;
+    }
   });
 
   return (
@@ -145,6 +179,21 @@ export function TransactionForm({ onSubmit }: TransactionFormProps) {
       <button type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Salvando...' : 'Salvar transacao'}
       </button>
+
+      {hasPendingConfirmation ? (
+        <section role="alert" aria-live="assertive">
+          <p>{duplicateConfirmation.message ?? 'Possivel duplicidade detectada.'}</p>
+          {duplicateConfirmation.candidate ? (
+            <p>Transacao semelhante encontrada: {duplicateConfirmation.candidate.matchedTransactionId}</p>
+          ) : null}
+          <button type="button" onClick={() => void confirmAndPersist()} disabled={duplicateConfirmation.isConfirming}>
+            {duplicateConfirmation.isConfirming ? 'Confirmando...' : 'Confirmar e salvar mesmo assim'}
+          </button>
+          <button type="button" onClick={cancelConfirmation} disabled={duplicateConfirmation.isConfirming}>
+            Cancelar
+          </button>
+        </section>
+      ) : null}
     </form>
   );
 }

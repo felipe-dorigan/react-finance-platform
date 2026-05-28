@@ -1,9 +1,13 @@
 import type { Transaction, TransactionType } from '@/features/shared/types/domain';
+import { ApiError } from '@/services/api/client';
 import { createApiClient } from '@/services/api/client';
 import {
   createTransactionRequestSchema,
+  duplicateDetectionErrorSchema,
   transactionSchema,
 } from '@/schemas/transactionSchemas';
+import type { DuplicateDetectionCandidate } from '@/features/transactions/duplicateDetectionService';
+import { emitTransactionCreatedMutationTrail } from '@/features/transactions/transactionAuditBridge';
 
 const apiClient = createApiClient('');
 
@@ -19,6 +23,16 @@ export class TransactionRuleError extends Error {
   }
 }
 
+export class DuplicateConfirmationRequiredError extends Error {
+  readonly candidate: DuplicateDetectionCandidate;
+
+  constructor(message: string, candidate: DuplicateDetectionCandidate) {
+    super(message);
+    this.name = 'DuplicateConfirmationRequiredError';
+    this.candidate = candidate;
+  }
+}
+
 export type CreateTransactionInput = {
   type: TransactionType;
   status: 'effective' | 'pending';
@@ -28,6 +42,10 @@ export type CreateTransactionInput = {
   sourceAccountId?: string | null;
   destinationAccountId?: string | null;
   cardId?: string | null;
+};
+
+export type CreateWalletTransactionOptions = {
+  duplicateConfirmation?: boolean;
 };
 
 type NormalizedTransactionInput = Omit<CreateTransactionInput, 'period' | 'sourceAccountId' | 'destinationAccountId' | 'cardId'> & {
@@ -89,13 +107,25 @@ export async function listWalletTransactions(walletId: string): Promise<Transact
 export async function createWalletTransaction(
   walletId: string,
   payload: CreateTransactionInput,
+  options?: CreateWalletTransactionOptions,
 ): Promise<Transaction> {
   const normalized = validateTransactionRules(payload);
   const parsedPayload = createTransactionRequestSchema.parse({
     ...normalized,
-    duplicateConfirmation: false,
+    duplicateConfirmation: options?.duplicateConfirmation ?? false,
   });
 
-  const response = await apiClient.post<unknown>(`/wallets/${walletId}/transactions`, parsedPayload);
-  return transactionSchema.parse(response);
+  try {
+    const response = await apiClient.post<unknown>(`/wallets/${walletId}/transactions`, parsedPayload);
+    const createdTransaction = transactionSchema.parse(response);
+    emitTransactionCreatedMutationTrail(createdTransaction);
+    return createdTransaction;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 409) {
+      const duplicateError = duplicateDetectionErrorSchema.parse(error.payload);
+      throw new DuplicateConfirmationRequiredError(duplicateError.message, duplicateError.duplicateCandidate);
+    }
+
+    throw error;
+  }
 }

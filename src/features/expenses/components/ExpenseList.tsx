@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Card } from '@/features/shared/types/domain';
 import type { Expense } from '@/features/expenses/expenseService';
 import { PayExpenseAction } from '@/features/expenses/components/PayExpenseAction';
@@ -18,13 +18,20 @@ export function ExpenseList({
   walletId,
   onExpensePaid,
 }: ExpenseListProps) {
+  const [listExpenses, setListExpenses] = useState<Expense[]>(expenses);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [expandedExpenseId, setExpandedExpenseId] = useState<string | null>(null);
 
-  const filteredExpenses =
-    selectedCardId === null ? expenses : expenses.filter((exp) => exp.cardId === selectedCardId);
+  useEffect(() => {
+    setListExpenses(expenses);
+  }, [expenses]);
 
-  if (expenses.length === 0) {
+  const filteredExpenses = useMemo(
+    () => (selectedCardId === null ? listExpenses : listExpenses.filter((exp) => exp.cardId === selectedCardId)),
+    [listExpenses, selectedCardId],
+  );
+
+  if (listExpenses.length === 0) {
     return (
       <section aria-label="Listagem de despesas">
         <h3>Despesas</h3>
@@ -62,7 +69,9 @@ export function ExpenseList({
             <li key={expense.id}>
               <div>
                 <strong>R$ {expense.amount}</strong> | {expense.date} | Status:{' '}
-                {expense.cardExpensePaymentStatus === 'paid' ? 'Paga' : 'Não paga'}
+                <span data-testid={`expense-status-${expense.id}`}>
+                  {expense.cardExpensePaymentStatus === 'paid' ? 'Paga' : 'Não paga'}
+                </span>
               </div>
 
               {expense.cardExpensePaymentStatus === 'unpaid' && (
@@ -84,7 +93,10 @@ export function ExpenseList({
                   expenseId={expense.id}
                   expenseAmount={expense.amount}
                   accounts={accounts}
-                  onSuccess={() => {
+                  onSuccess={(paidExpense: Expense) => {
+                    setListExpenses((currentExpenses) =>
+                      currentExpenses.map((entry) => (entry.id === paidExpense.id ? paidExpense : entry)),
+                    );
                     setExpandedExpenseId(null);
                     onExpensePaid?.(expense.id);
                   }}

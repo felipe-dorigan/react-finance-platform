@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { walletQueryKeys } from '@/services/api/queryKeys';
 import {
   createWalletTransaction,
+  DuplicateConfirmationRequiredError,
   listWalletTransactions,
   type CreateTransactionInput,
 } from '@/features/transactions/transactionService';
@@ -30,13 +31,16 @@ export function WalletDashboardPage() {
   });
 
   const createTransactionMutation = useMutation({
-    mutationFn: (payload: CreateTransactionInput) => createWalletTransaction(walletId, payload),
+    mutationFn: ({
+      payload,
+      options,
+    }: {
+      payload: CreateTransactionInput;
+      options?: { duplicateConfirmation?: boolean };
+    }) => createWalletTransaction(walletId, payload, options),
     onSuccess: async () => {
       setFeedback('Transacao criada com sucesso.');
       await queryClient.invalidateQueries({ queryKey: walletQueryKeys.transactions(walletId) });
-    },
-    onError: () => {
-      setFeedback('Nao foi possivel criar a transacao.');
     },
   });
 
@@ -72,8 +76,17 @@ export function WalletDashboardPage() {
         initialProjectedBalance={wallet?.projectedBalance}
       />
       <TransactionForm
-        onSubmit={async (payload) => {
-          await createTransactionMutation.mutateAsync(payload);
+        onSubmit={async (payload, options) => {
+          try {
+            await createTransactionMutation.mutateAsync({ payload, options });
+          } catch (error) {
+            if (error instanceof DuplicateConfirmationRequiredError) {
+              throw error;
+            }
+
+            setFeedback('Nao foi possivel criar a transacao.');
+            throw error;
+          }
         }}
       />
 

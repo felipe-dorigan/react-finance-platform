@@ -71,5 +71,5 @@ export const updateTransactionRequestSchema = createTransactionRequestSchema.ext
 });
 
 export const payExpenseRequestSchema = z.object({
-  paidFromAccountId: z.string().uuid(),
+  paidFromAccountId: z.string().min(1),
 });

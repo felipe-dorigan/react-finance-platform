@@ -2,10 +2,12 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
-import { PayExpenseAction } from '@/features/expenses/components/PayExpenseAction';
+import { ExpenseList } from '@/features/expenses/components/ExpenseList';
 import * as expenseService from '@/features/expenses/expenseService';
+import type { Card } from '@/features/shared/types/domain';
+import type { Expense } from '@/features/expenses/expenseService';
 
-function renderPayExpenseAction(props: Parameters<typeof PayExpenseAction>[0]) {
+function renderExpenseFlow(props: Parameters<typeof ExpenseList>[0]) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -15,7 +17,7 @@ function renderPayExpenseAction(props: Parameters<typeof PayExpenseAction>[0]) {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <PayExpenseAction {...props} />
+      <ExpenseList {...props} />
     </QueryClientProvider>,
   );
 }
@@ -23,10 +25,39 @@ function renderPayExpenseAction(props: Parameters<typeof PayExpenseAction>[0]) {
 describe('pay card expense flow', () => {
   const mockWalletId = 'wallet-001';
   const mockExpenseId = 'exp-001';
+  const mockCardId = 'card-001';
   const mockExpenseAmount = '150.00';
   const mockAccounts = [
     { id: 'acc-001', name: 'Conta Corrente' },
     { id: 'acc-002', name: 'Conta Poupança' },
+  ];
+
+  const mockCards: Card[] = [
+    {
+      id: mockCardId,
+      walletId: mockWalletId,
+      name: 'Cartão Principal',
+      debitAccountId: 'acc-001',
+      status: 'active',
+    },
+  ];
+
+  const mockExpenses: Expense[] = [
+    {
+      id: mockExpenseId,
+      walletId: mockWalletId,
+      type: 'expense',
+      status: 'effective',
+      amount: mockExpenseAmount,
+      date: '2026-05-28T00:00:00.000Z',
+      period: null,
+      sourceAccountId: null,
+      destinationAccountId: null,
+      cardId: mockCardId,
+      cardExpensePaymentStatus: 'unpaid',
+      paidFromAccountId: null,
+      paidAt: null,
+    },
   ];
 
   const paidExpense = {
@@ -45,214 +76,77 @@ describe('pay card expense flow', () => {
     paidAt: '2026-05-28T10:00:00.000Z',
   };
 
-  it('renderiza formulário com campos obrigatórios', () => {
-    renderPayExpenseAction({
-      walletId: mockWalletId,
-      expenseId: mockExpenseId,
-      expenseAmount: mockExpenseAmount,
+  it('abre o fluxo de pagamento a partir da listagem', async () => {
+    const user = userEvent.setup();
+
+    renderExpenseFlow({
+      expenses: mockExpenses,
+      cards: mockCards,
       accounts: mockAccounts,
+      walletId: mockWalletId,
     });
+
+    await user.click(screen.getByRole('button', { name: 'Pagar' }));
 
     expect(screen.getByText('Pagar despesa')).toBeInTheDocument();
     expect(screen.getByLabelText('Conta para débito:')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Pagar' })).toBeInTheDocument();
   });
 
-  it('bloqueia envio sem seleção de conta', async () => {
+  it('paga despesa com débito em conta e atualiza status no histórico', async () => {
     const user = userEvent.setup();
-
-    renderPayExpenseAction({
-      walletId: mockWalletId,
-      expenseId: mockExpenseId,
-      expenseAmount: mockExpenseAmount,
-      accounts: mockAccounts,
-    });
-
-    const payButton = screen.getByRole('button', { name: 'Pagar' });
-    expect(payButton).toBeDisabled();
-
-    const accountSelect = screen.getByLabelText('Conta para débito:');
-    await user.click(payButton);
-
-    // O botão continua desabilitado porque não há conta selecionada
-    expect(payButton).toBeDisabled();
-  });
-
-  it('habilita botão após seleção de conta', async () => {
-    const user = userEvent.setup();
-
-    renderPayExpenseAction({
-      walletId: mockWalletId,
-      expenseId: mockExpenseId,
-      expenseAmount: mockExpenseAmount,
-      accounts: mockAccounts,
-    });
-
-    const payButton = screen.getByRole('button', { name: 'Pagar' });
-    expect(payButton).toBeDisabled();
-
-    const accountSelect = screen.getByLabelText('Conta para débito:');
-    await user.selectOptions(accountSelect, 'acc-001');
-
-    expect(payButton).not.toBeDisabled();
-  });
-
-  it('exibe feedback de sucesso após pagamento', async () => {
-    const user = userEvent.setup();
-
-    vi.spyOn(expenseService, 'payCardExpense').mockResolvedValueOnce(paidExpense);
-
-    renderPayExpenseAction({
-      walletId: mockWalletId,
-      expenseId: mockExpenseId,
-      expenseAmount: mockExpenseAmount,
-      accounts: mockAccounts,
-    });
-
-    const accountSelect = screen.getByLabelText('Conta para débito:');
-    const payButton = screen.getByRole('button', { name: 'Pagar' });
-
-    await user.selectOptions(accountSelect, 'acc-001');
-    await user.click(payButton);
-
-    await waitFor(() => {
-      expect(screen.getByText('Despesa paga com sucesso.')).toBeInTheDocument();
-    });
-  });
-
-  it('exibe feedback de erro em caso de falha', async () => {
-    const user = userEvent.setup();
-
-    vi.spyOn(expenseService, 'payCardExpense').mockRejectedValueOnce(
-      new Error('API Error'),
-    );
-
-    const { unmount } = renderPayExpenseAction({
-      walletId: mockWalletId,
-      expenseId: mockExpenseId,
-      expenseAmount: mockExpenseAmount,
-      accounts: mockAccounts,
-    });
-
-    const accountSelect = screen.getByLabelText('Conta para débito:');
-    const payButton = screen.getByRole('button', { name: 'Pagar' });
-
-    await user.selectOptions(accountSelect, 'acc-001');
-    await user.click(payButton);
-
-    await waitFor(() => {
-      expect(screen.getByText('Não foi possível pagar a despesa.'))
-        .toBeInTheDocument();
-    });
-
-    unmount();
-  });
-
-  it('desabilita campos durante processamento', async () => {
-    const user = userEvent.setup();
-
-    vi.spyOn(expenseService, 'payCardExpense').mockImplementation(
-      () => new Promise((resolve) => {
-        setTimeout(() => resolve(paidExpense), 1000);
-      }),
-    );
-
-    renderPayExpenseAction({
-      walletId: mockWalletId,
-      expenseId: mockExpenseId,
-      expenseAmount: mockExpenseAmount,
-      accounts: mockAccounts,
-    });
-
-    const accountSelect = screen.getByLabelText('Conta para débito:');
-    const payButton = screen.getByRole('button', { name: 'Pagar' });
-
-    await user.selectOptions(accountSelect, 'acc-001');
-    await user.click(payButton);
-
-    expect(screen.getByRole('button', { name: 'Processando...' })).toBeInTheDocument();
-    expect(accountSelect).toBeDisabled();
-
-    await waitFor(() => {
-      expect(screen.getByText('Despesa paga com sucesso.')).toBeInTheDocument();
-    });
-  });
-
-  it('chama onSuccess após pagamento bem-sucedido', async () => {
-    const user = userEvent.setup();
-    const onSuccess = vi.fn();
-
-    vi.spyOn(expenseService, 'payCardExpense').mockResolvedValueOnce(paidExpense);
-
-    renderPayExpenseAction({
-      walletId: mockWalletId,
-      expenseId: mockExpenseId,
-      expenseAmount: mockExpenseAmount,
-      accounts: mockAccounts,
-      onSuccess,
-    });
-
-    const accountSelect = screen.getByLabelText('Conta para débito:');
-    const payButton = screen.getByRole('button', { name: 'Pagar' });
-
-    await user.selectOptions(accountSelect, 'acc-001');
-    await user.click(payButton);
-
-    await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalled();
-    });
-  });
-
-  it('chama a função payCardExpense com os parâmetros corretos', async () => {
-    const user = userEvent.setup();
-    const payCardExpenseSpy = vi.spyOn(expenseService, 'payCardExpense')
+    const onExpensePaid = vi.fn();
+    const payCardExpenseSpy = vi
+      .spyOn(expenseService, 'payCardExpense')
       .mockResolvedValueOnce(paidExpense);
 
-    renderPayExpenseAction({
-      walletId: mockWalletId,
-      expenseId: mockExpenseId,
-      expenseAmount: mockExpenseAmount,
+    renderExpenseFlow({
+      expenses: mockExpenses,
+      cards: mockCards,
       accounts: mockAccounts,
+      walletId: mockWalletId,
+      onExpensePaid,
     });
+
+    await user.click(screen.getByRole('button', { name: 'Pagar' }));
 
     const accountSelect = screen.getByLabelText('Conta para débito:');
     const payButton = screen.getByRole('button', { name: 'Pagar' });
 
+    expect(payButton).toBeDisabled();
+
     await user.selectOptions(accountSelect, 'acc-001');
     await user.click(payButton);
 
     await waitFor(() => {
-      expect(payCardExpenseSpy).toHaveBeenCalledWith(
-        mockWalletId,
-        mockExpenseId,
-        'acc-001',
-      );
+      expect(screen.getByTestId('expense-status-exp-001')).toHaveTextContent('Paga');
+    });
+    await waitFor(() => {
+      expect(payCardExpenseSpy).toHaveBeenCalledWith(mockWalletId, mockExpenseId, 'acc-001');
+      expect(onExpensePaid).toHaveBeenCalledWith(mockExpenseId);
+      expect(screen.queryByRole('button', { name: 'Pagar' })).not.toBeInTheDocument();
     });
   });
 
-  it('limpa formulário após sucesso', async () => {
+  it('mostra feedback de erro quando pagamento falha', async () => {
     const user = userEvent.setup();
 
-    vi.spyOn(expenseService, 'payCardExpense').mockResolvedValueOnce(paidExpense);
+    vi.spyOn(expenseService, 'payCardExpense').mockRejectedValueOnce(new Error('API Error'));
 
-    renderPayExpenseAction({
-      walletId: mockWalletId,
-      expenseId: mockExpenseId,
-      expenseAmount: mockExpenseAmount,
+    renderExpenseFlow({
+      expenses: mockExpenses,
+      cards: mockCards,
       accounts: mockAccounts,
+      walletId: mockWalletId,
     });
 
-    const accountSelect = screen.getByLabelText('Conta para débito:') as HTMLSelectElement;
-    const payButton = screen.getByRole('button', { name: 'Pagar' });
-
-    await user.selectOptions(accountSelect, 'acc-001');
-    expect(accountSelect.value).toBe('acc-001');
-
-    await user.click(payButton);
+    await user.click(screen.getByRole('button', { name: 'Pagar' }));
+    await user.selectOptions(screen.getByLabelText('Conta para débito:'), 'acc-001');
+    await user.click(screen.getByRole('button', { name: 'Pagar' }));
 
     await waitFor(() => {
-      expect(screen.getByText('Despesa paga com sucesso.')).toBeInTheDocument();
-      expect(accountSelect.value).toBe('');
+      expect(screen.getByText('Não foi possível pagar a despesa.')).toBeInTheDocument();
+      expect(screen.getByTestId('expense-status-exp-001')).toHaveTextContent('Não paga');
     });
   });
 });
