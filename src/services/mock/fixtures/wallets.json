@@ -1,0 +1,49 @@
+{
+  "wallets": [
+    {
+      "id": "wallet-001",
+      "ownerId": "user-001",
+      "name": "Carteira Principal",
+      "timezone": "America/Sao_Paulo",
+      "status": "active",
+      "mainBalance": "12500.00",
+      "projectedBalance": "13875.00"
+    }
+  ],
+  "accounts": [
+    {
+      "id": "account-001",
+      "walletId": "wallet-001",
+      "name": "Conta Corrente",
+      "status": "active",
+      "balance": "10000.00"
+    },
+    {
+      "id": "account-002",
+      "walletId": "wallet-001",
+      "name": "Reserva",
+      "status": "inactive",
+      "balance": "2500.00"
+    }
+  ],
+  "cards": [
+    {
+      "id": "card-001",
+      "walletId": "wallet-001",
+      "name": "Cartão Principal",
+      "debitAccountId": "account-001",
+      "status": "active"
+    }
+  ],
+  "transactions": [],
+  "permissions": [
+    {
+      "id": "perm-001",
+      "walletId": "wallet-001",
+      "invitedEmail": "collab@finance.dev",
+      "role": "edit",
+      "roleLabel": "leitura+edicao"
+    }
+  ],
+  "auditEvents": []
+}

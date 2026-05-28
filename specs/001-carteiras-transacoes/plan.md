@@ -16,7 +16,7 @@ Implementar frontend React para gestão financeira por carteira (limite de 2), c
 
 **Storage**: Mock in-memory (MSW) + projeções derivadas por carteira; trilhas técnicas append-only (`AuditEvent`, `WalletMutationJournal`, `TelemetryEvent`, `ErrorSignal`)
 
-**Testing**: Vitest + Testing Library (UI/integration), Playwright (jornadas críticas), validações de contrato com OpenAPI mock
+**Testing**: Vitest + Testing Library (UI/integration), validações de contrato com OpenAPI mock
 
 **Target Platform**: Web SPA moderna (desktop e mobile), navegadores Chromium/Firefox/Safari atuais
 
@@ -67,7 +67,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 - Financial integrity gate: PASS. Modelagem define `decimal.js`, saldos principal/projetado, timezone IANA da carteira e persistência UTC.
 - React architecture gate: PASS. Ownership definido: server state (TanStack Query), form state (RHF), UI/global mínimo (Zustand/Context), validação com Zod.
 - Routing contract gate: PASS. Rotas por carteira (`/wallets/:walletId/*`), guardas de auth/role e error boundaries segmentadas.
-- Quality gate: PASS. Estratégia inclui baseline mínimo obrigatório de interface + testes de integração/E2E das jornadas críticas.
+- Quality gate: PASS. Estratégia inclui baseline mínimo obrigatório de interface + testes de integração das jornadas críticas.
 - Security/a11y/observability gate: PASS. Escopo de permissão por carteira, baseline WCAG 2.2 AA documentada e telemetria/sinais de erro separados da auditoria.
 
 ## Phase 0 - Research Output
@@ -135,7 +135,6 @@ src/
 
 tests/
 ├── integration/
-├── e2e/
 └── unit/
 ```
 

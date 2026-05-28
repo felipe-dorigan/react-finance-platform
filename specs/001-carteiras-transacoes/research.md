@@ -78,7 +78,7 @@ Decision: Adotar baseline minimo com sete frentes obrigatorias de teste de inter
 
 Rationale: Alinha spec e constitution 2.1.0 com um gate enxuto de qualidade focado no que o usuario percebe em tela.
 
-Alternatives considered: Suite ampla por camadas (unit/integration/contract/E2E) como obrigatoria de merge (rejeitado por custo de execucao e por nao refletir a decisao atual de escopo minimo).
+Alternatives considered: Suite ampla por camadas como obrigatoria de merge (rejeitado por custo de execucao e por nao refletir a decisao atual de escopo minimo).
 
 Plano de evidencia:
 

@@ -16,12 +16,11 @@
 
 **Purpose**: Inicializar o app React, o toolchain e a estrutura alvo definida no plano.
 
-- [X] T001 Inicializar o projeto React 19 + TypeScript strict em ./package.json e ./tsconfig.json
-- [X] T002 Configurar Vite, bootstrap da aplicacao e providers base em ./vite.config.ts, src/main.tsx e src/app/providers/AppProviders.tsx
-- [X] T003 [P] Configurar ESLint e Prettier em ./eslint.config.js, ./.prettierrc e ./.prettierignore
-- [X] T004 [P] Configurar Vitest e Testing Library em ./vitest.config.ts e tests/setup.ts
-- [X] T005 [P] Configurar Playwright em ./playwright.config.ts e tests/e2e/.gitkeep
-- [X] T006 Criar a estrutura inicial de app e features em src/app/router/.gitkeep, src/features/.gitkeep, src/services/.gitkeep e src/schemas/.gitkeep
+- [x] T001 Inicializar o projeto React 19 + TypeScript strict em ./package.json e ./tsconfig.json
+- [x] T002 Configurar Vite, bootstrap da aplicacao e providers base em ./vite.config.ts, src/main.tsx e src/app/providers/AppProviders.tsx
+- [x] T003 [P] Configurar ESLint e Prettier em ./eslint.config.js, ./.prettierrc e ./.prettierignore
+- [x] T004 [P] Configurar Vitest e Testing Library em ./vitest.config.ts e tests/setup.ts
+- [x] T006 Criar a estrutura inicial de app e features em src/app/router/.gitkeep, src/features/.gitkeep, src/services/.gitkeep e src/schemas/.gitkeep
 
 ---
 
@@ -31,21 +30,20 @@
 
 **CRITICAL**: Nenhuma historia pode comecar antes desta fase terminar.
 
-- [ ] T007 Definir os tipos de dominio compartilhados em src/features/shared/types/domain.ts
-- [ ] T008 [P] Implementar utilitarios de dinheiro e datas com decimal-safe arithmetic em src/lib/money.ts e src/lib/dates.ts
-- [ ] T009 [P] Implementar schemas Zod compartilhados de carteira, conta, cartao, transacao e permissao em src/schemas/walletSchemas.ts e src/schemas/transactionSchemas.ts
-- [ ] T093 [P] Implementar schema e validacao de timezone IANA da carteira e normalizacao de timezone default em src/schemas/walletSchemas.ts e src/features/wallets/timezone/timezoneSchema.ts
-- [ ] T094 [P] Implementar utilitarios de conversao UTC-local por timezone da carteira para periodo, recorrencia e fechamento diario em src/lib/dates.ts e src/features/wallets/timezone/timezoneService.ts
-- [ ] T095 [P] Criar teste unitario das regras de timezone da carteira (IANA), conversao UTC e fechamento diario em tests/unit/wallets/timezoneRules.test.ts
-- [ ] T010 [P] Implementar cliente HTTP, chaves de query e adapters de resposta em src/services/api/client.ts e src/services/api/queryKeys.ts
-- [ ] T011 [P] Implementar bootstrap do MSW e handlers baseados em contracts/frontend-api.yaml em src/services/mock/browser.ts, src/services/mock/handlers.ts e src/services/mock/fixtures/wallets.json
-- [ ] T012 Implementar o mapa de rotas por carteira, guards de autenticacao-permissao e error boundaries em src/app/router/routes.tsx e src/app/router/guards.tsx
-- [ ] T013 [P] Criar testes unitarios obrigatorios do contrato de navegacao para params de rota e guardas de autenticacao-permissao em tests/unit/router/routeGuardRules.test.ts
-- [ ] T014 [P] Criar testes de integracao obrigatorios do contrato de navegacao para deep links, back-forward e 404 por carteira em tests/integration/router/navigationContract.test.tsx
-- [ ] T015 [P] Criar cenario E2E obrigatorio do contrato de navegacao cobrindo error boundaries por segmento e recuperacao de rota em tests/e2e/router-contract.spec.ts
-- [ ] T016 [P] Implementar o store append-only de auditoria e journal de mutacoes em src/features/audit/auditStore.ts e src/features/persistence/walletMutationJournal.ts
-- [ ] T017 [P] Implementar a base de telemetria e sinais de erro com correlacao de rota e sessao em src/features/observability/telemetryService.ts e src/features/observability/errorSignalService.ts
-- [ ] T018 [P] Implementar o shell autenticado e carregamento da sessao mock em src/app/layout/AppShell.tsx e src/features/wallets/session/sessionService.ts
+- [x] T007 Definir os tipos de dominio compartilhados em src/features/shared/types/domain.ts
+- [x] T008 [P] Implementar utilitarios de dinheiro e datas com decimal-safe arithmetic em src/lib/money.ts e src/lib/dates.ts
+- [x] T009 [P] Implementar schemas Zod compartilhados de carteira, conta, cartao, transacao e permissao em src/schemas/walletSchemas.ts e src/schemas/transactionSchemas.ts
+- [x] T093 [P] Implementar schema e validacao de timezone IANA da carteira e normalizacao de timezone default em src/schemas/walletSchemas.ts e src/features/wallets/timezone/timezoneSchema.ts
+- [x] T094 [P] Implementar utilitarios de conversao UTC-local por timezone da carteira para periodo, recorrencia e fechamento diario em src/lib/dates.ts e src/features/wallets/timezone/timezoneService.ts
+- [x] T095 [P] Criar teste unitario das regras de timezone da carteira (IANA), conversao UTC e fechamento diario em tests/unit/wallets/timezoneRules.test.ts
+- [x] T010 [P] Implementar cliente HTTP, chaves de query e adapters de resposta em src/services/api/client.ts e src/services/api/queryKeys.ts
+- [x] T011 [P] Implementar bootstrap do MSW e handlers baseados em contracts/frontend-api.yaml em src/services/mock/browser.ts, src/services/mock/handlers.ts e src/services/mock/fixtures/wallets.json
+- [x] T012 Implementar o mapa de rotas por carteira, guards de autenticacao-permissao e error boundaries em src/app/router/routes.tsx e src/app/router/guards.tsx
+- [x] T013 [P] Criar testes unitarios obrigatorios do contrato de navegacao para params de rota e guardas de autenticacao-permissao em tests/unit/router/routeGuardRules.test.ts
+- [x] T014 [P] Criar testes de integracao obrigatorios do contrato de navegacao para deep links, back-forward e 404 por carteira em tests/integration/router/navigationContract.test.tsx
+- [x] T016 [P] Implementar o store append-only de auditoria e journal de mutacoes em src/features/audit/auditStore.ts e src/features/persistence/walletMutationJournal.ts
+- [x] T017 [P] Implementar a base de telemetria e sinais de erro com correlacao de rota e sessao em src/features/observability/telemetryService.ts e src/features/observability/errorSignalService.ts
+- [x] T018 [P] Implementar o shell autenticado e carregamento da sessao mock em src/app/layout/AppShell.tsx e src/features/wallets/session/sessionService.ts
 
 **Checkpoint**: Fundacao pronta; US1, US2 e US3 podem ser executadas em paralelo.
 
@@ -68,7 +66,6 @@
 - [ ] T025 [P] [US1] Criar teste de integracao da regressao de calculo exibido no resumo e na lista em tests/integration/transactions/walletSummaryRecalculation.test.tsx
 - [ ] T026 [P] [US1] Criar teste de integracao de acessibilidade da jornada de transacoes incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us1-transactions.a11y.test.tsx
 - [ ] T027 [P] [US1] Criar teste de integracao de telemetria e ErrorSignal em mutacoes criticas e falhas de carregamento de transacoes com erro visivel ao usuario em tests/integration/observability/us1-transactions-observability.test.tsx
-- [ ] T028 [P] [US1] Criar cenario E2E da jornada principal de transacoes em tests/e2e/us1-transactions.spec.ts
 - [ ] T038 [P] [US1] Criar teste de integracao da listagem de despesas com despesas de cartao e filtro por cartao em tests/integration/expenses/expenseListWithCardFilter.test.tsx
 - [ ] T039 [P] [US1] Criar teste de integracao da acao de pagar despesa com debito em conta e atualizacao de status no historico em tests/integration/expenses/payCardExpenseFlow.test.tsx
 - [ ] T040 [P] [US1] Criar teste unitario do detector de duplicidade com janela de 5 minutos para criacao e edicao em tests/unit/transactions/duplicateDetectionWindow.test.ts
@@ -114,7 +111,6 @@
 - [ ] T053 [P] [US2] Criar teste de integracao da orientacao de troca ou desvinculacao antes da exclusao em tests/integration/accounts-cards/accountDeleteGuidance.test.tsx
 - [ ] T054 [P] [US2] Criar teste de integracao de acessibilidade da jornada de contas e cartoes incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us2-accounts-cards.a11y.test.tsx
 - [ ] T055 [P] [US2] Criar teste de integracao de telemetria e ErrorSignal em mutacoes criticas, falhas de carregamento e bloqueios de exclusao de contas-cartoes em tests/integration/observability/us2-accounts-cards-observability.test.tsx
-- [ ] T056 [P] [US2] Criar cenario E2E da jornada de carteiras, contas e cartoes incluindo troca de conta de debito e medicao de vinculo para SC-009-FR-030A em tests/e2e/us2-accounts-cards.spec.ts
 
 ### Implementation for User Story 2
 
@@ -148,7 +144,6 @@
 - [ ] T071 [P] [US3] Criar teste de integracao da protecao basica de permissao na UI em tests/integration/permissions/uiPermissionProtection.test.tsx
 - [ ] T072 [P] [US3] Criar teste de integracao de acessibilidade da jornada de colaboracao incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us3-collaboration.a11y.test.tsx
 - [ ] T073 [P] [US3] Criar teste de integracao de telemetria e ErrorSignal em convites, mudancas de permissao e bloqueios visuais com erro visivel ao usuario em tests/integration/observability/us3-collaboration-observability.test.tsx
-- [ ] T074 [P] [US3] Criar cenario E2E da jornada de colaboracao por carteira em tests/e2e/us3-collaboration.spec.ts
 
 ### Implementation for User Story 3
 
@@ -205,11 +200,11 @@
 
 ### Parallel Opportunities
 
-- Setup em paralelo: T003, T004, T005.
-- Foundational em paralelo: T008, T009, T093, T094, T095, T010, T011, T013, T014, T015, T016, T017.
-- US1 em paralelo: T019-T028, T038-T044, T096.
-- US2 em paralelo: T046-T056.
-- US3 em paralelo: T068-T074.
+- Setup em paralelo: T003, T004.
+- Foundational em paralelo: T008, T009, T093, T094, T095, T010, T011, T013, T014, T016, T017.
+- US1 em paralelo: T019-T027, T038-T044, T096.
+- US2 em paralelo: T046-T055.
+- US3 em paralelo: T068-T073.
 - Polish em paralelo: T081, T082, T083, T084, T085, T086, T090, T091, T092.
 
 ---

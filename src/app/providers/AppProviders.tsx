@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
+import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
+import { startMockBrowser } from '@/services/mock/browser';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,9 +21,9 @@ type AppProvidersProps = {
 };
 
 export function AppProviders({ children }: AppProvidersProps) {
-  return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </BrowserRouter>
-  );
+  useEffect(() => {
+    void startMockBrowser();
+  }, []);
+
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

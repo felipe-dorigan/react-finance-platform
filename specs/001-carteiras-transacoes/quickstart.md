@@ -11,7 +11,6 @@ Este ambiente e a referencia oficial para validar NFR-005, SC-008 e SC-009.
 
 - SO referencia: Windows 11 23H2 (equivalentes aceitos: Ubuntu 22.04 LTS e macOS 14)
 - Runtime: Node.js 20 LTS e npm 10+
-- Browser de benchmark: Chrome 125 headless (CI) / Chrome estavel local
 - Hardware referencia: 4 vCPU, 8 GB RAM
 - Rede de teste: latencia local <= 20 ms, sem throttling
 - Dataset de validacao:
@@ -42,7 +41,6 @@ Metodo de medicao:
 3. Configurar lint/typecheck/testes:
    - ESLint + Prettier
    - Vitest + Testing Library
-   - Playwright
 
 4. Configurar a persistência mockada em modelo híbrido: hard-delete em registros de negócio da carteira + trilhas técnicas append-only (journal, auditoria, telemetria e erro).
 
@@ -52,7 +50,7 @@ Metodo de medicao:
 - src/features/{wallets,transactions,accounts,cards,permissions,audit,persistence,observability}
 - src/services/{api,mock}
 - src/schemas
-- tests/{unit,integration,e2e}
+- tests/{unit,integration}
 
 ## Fluxo de execução local
 
