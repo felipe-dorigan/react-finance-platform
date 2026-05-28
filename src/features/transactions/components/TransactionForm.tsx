@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   DuplicateConfirmationRequiredError,
+  serializeWalletTransactionDate,
   type CreateTransactionInput,
 } from '@/features/transactions/transactionService';
 import { useDuplicateConfirmation } from '@/features/transactions/hooks/useDuplicateConfirmation';
@@ -56,13 +57,19 @@ const transactionFormSchema = z
 type TransactionFormValues = z.infer<typeof transactionFormSchema>;
 
 type TransactionFormProps = {
+  timezone?: string;
   onSubmit: (
     payload: CreateTransactionInput,
     options?: { duplicateConfirmation?: boolean },
   ) => Promise<void>;
 };
 
-export function TransactionForm({ onSubmit }: TransactionFormProps) {
+export function TransactionForm({ timezone = 'UTC', onSubmit }: TransactionFormProps) {
+  const submitButtonRef = useRef<HTMLButtonElement | null>(null);
+  const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement | null>(null);
+  const dialogTriggerRef = useRef<HTMLElement | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -103,12 +110,46 @@ export function TransactionForm({ onSubmit }: TransactionFormProps) {
     }
   }, [selectedType, setValue]);
 
+  useEffect(() => {
+    if (!hasPendingConfirmation) {
+      return;
+    }
+
+    confirmButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') {
+        return;
+      }
+
+      const focusableElements = [confirmButtonRef.current, cancelButtonRef.current].filter(Boolean) as HTMLElement[];
+      if (focusableElements.length === 0) {
+        return;
+      }
+
+      const currentIndex = focusableElements.findIndex((element) => element === document.activeElement);
+      const nextIndex = event.shiftKey
+        ? (currentIndex <= 0 ? focusableElements.length - 1 : currentIndex - 1)
+        : (currentIndex === focusableElements.length - 1 ? 0 : currentIndex + 1);
+
+      event.preventDefault();
+      focusableElements[nextIndex]?.focus();
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [hasPendingConfirmation]);
+
   const submit = handleSubmit(async (values) => {
+    dialogTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : submitButtonRef.current;
+
     const payload: CreateTransactionInput = {
       type: values.type,
       status: values.status,
       amount: values.amount,
-      date: `${values.date}T00:00:00.000Z`,
+      date: serializeWalletTransactionDate(values.date, timezone),
       period: selectedType === 'transfer' ? null : values.period,
       sourceAccountId: values.sourceAccountId,
       destinationAccountId: values.destinationAccountId,
@@ -176,20 +217,34 @@ export function TransactionForm({ onSubmit }: TransactionFormProps) {
         </>
       )}
 
-      <button type="submit" disabled={isSubmitting}>
+      <button ref={submitButtonRef} type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Salvando...' : 'Salvar transacao'}
       </button>
 
       {hasPendingConfirmation ? (
-        <section role="alert" aria-live="assertive">
+        <section role="dialog" aria-modal="true" aria-labelledby="duplicate-confirmation-title">
+          <h3 id="duplicate-confirmation-title">Confirmar transacao duplicada</h3>
           <p>{duplicateConfirmation.message ?? 'Possivel duplicidade detectada.'}</p>
           {duplicateConfirmation.candidate ? (
             <p>Transacao semelhante encontrada: {duplicateConfirmation.candidate.matchedTransactionId}</p>
           ) : null}
-          <button type="button" onClick={() => void confirmAndPersist()} disabled={duplicateConfirmation.isConfirming}>
+          <button
+            ref={confirmButtonRef}
+            type="button"
+            onClick={() => void confirmAndPersist()}
+            disabled={duplicateConfirmation.isConfirming}
+          >
             {duplicateConfirmation.isConfirming ? 'Confirmando...' : 'Confirmar e salvar mesmo assim'}
           </button>
-          <button type="button" onClick={cancelConfirmation} disabled={duplicateConfirmation.isConfirming}>
+          <button
+            ref={cancelButtonRef}
+            type="button"
+            onClick={() => {
+              cancelConfirmation();
+              dialogTriggerRef.current?.focus();
+            }}
+            disabled={duplicateConfirmation.isConfirming}
+          >
             Cancelar
           </button>
         </section>

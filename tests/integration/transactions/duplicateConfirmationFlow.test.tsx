@@ -78,7 +78,9 @@ describe('duplicate confirmation flow', () => {
     await user.type(screen.getByLabelText('Data'), '2026-05-28');
     await user.click(screen.getByRole('button', { name: 'Salvar transacao' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Possivel duplicidade detectada; confirme para persistir.');
+    expect(await screen.findByRole('dialog', { name: 'Confirmar transacao duplicada' })).toHaveTextContent(
+      'Possivel duplicidade detectada; confirme para persistir.',
+    );
     expect(screen.getByText('Transacao semelhante encontrada: tx-050')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Confirmar e salvar mesmo assim' }));

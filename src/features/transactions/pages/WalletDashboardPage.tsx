@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { walletQueryKeys } from '@/services/api/queryKeys';
 import {
   createWalletTransaction,
@@ -9,14 +9,21 @@ import {
   type CreateTransactionInput,
 } from '@/features/transactions/transactionService';
 import { getWalletById } from '@/features/wallets/walletService';
+import {
+  trackTransactionCreateFailure,
+  trackTransactionCreateSuccess,
+  trackTransactionLoadFailure,
+} from '@/features/transactions/transactionObservability';
 import { TransactionForm } from '@/features/transactions/components/TransactionForm';
 import { TransactionList } from '@/features/transactions/components/TransactionList';
 import { WalletSummaryCard } from '@/features/transactions/components/WalletSummaryCard';
 
 export function WalletDashboardPage() {
   const { walletId = '' } = useParams();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [feedback, setFeedback] = useState<string | null>(null);
+  const hasTrackedLoadFailureRef = useRef(false);
 
   const walletQuery = useQuery({
     queryKey: walletQueryKeys.detail(walletId),
@@ -39,6 +46,7 @@ export function WalletDashboardPage() {
       options?: { duplicateConfirmation?: boolean };
     }) => createWalletTransaction(walletId, payload, options),
     onSuccess: async () => {
+      trackTransactionCreateSuccess(walletId, location.pathname);
       setFeedback('Transacao criada com sucesso.');
       await queryClient.invalidateQueries({ queryKey: walletQueryKeys.transactions(walletId) });
     },
@@ -46,6 +54,15 @@ export function WalletDashboardPage() {
 
   const transactions = useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
   const wallet = useMemo(() => walletQuery.data, [walletQuery.data]);
+
+  useEffect(() => {
+    if (!transactionsQuery.isError || hasTrackedLoadFailureRef.current) {
+      return;
+    }
+
+    trackTransactionLoadFailure(walletId, location.pathname, transactionsQuery.error);
+    hasTrackedLoadFailureRef.current = true;
+  }, [walletId, location.pathname, transactionsQuery.error, transactionsQuery.isError]);
 
   if (transactionsQuery.isPending) {
     return <p>Carregando dashboard financeiro...</p>;
@@ -76,6 +93,7 @@ export function WalletDashboardPage() {
         initialProjectedBalance={wallet?.projectedBalance}
       />
       <TransactionForm
+        timezone={wallet?.timezone}
         onSubmit={async (payload, options) => {
           try {
             await createTransactionMutation.mutateAsync({ payload, options });
@@ -84,6 +102,7 @@ export function WalletDashboardPage() {
               throw error;
             }
 
+            trackTransactionCreateFailure(walletId, location.pathname, error);
             setFeedback('Nao foi possivel criar a transacao.');
             throw error;
           }

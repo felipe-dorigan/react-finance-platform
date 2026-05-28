@@ -1,4 +1,5 @@
 import type { Transaction, TransactionType } from '@/features/shared/types/domain';
+import { toUtcDateFromZonedParts } from '@/lib/dates';
 import { ApiError } from '@/services/api/client';
 import { createApiClient } from '@/services/api/client';
 import {
@@ -97,6 +98,23 @@ export function validateTransactionRules(payload: CreateTransactionInput): Creat
   const normalized = normalizeTransactionInput(payload);
   validateTransferRules(normalized);
   return normalized;
+}
+
+export function serializeWalletTransactionDate(dateInput: string, timezone: string): string {
+  const [year, month, day] = dateInput.split('-').map(Number);
+  const utcDate = toUtcDateFromZonedParts(
+    {
+      year,
+      month,
+      day,
+      hour: 0,
+      minute: 0,
+      second: 0,
+    },
+    timezone,
+  );
+
+  return utcDate.toISOString();
 }
 
 export async function listWalletTransactions(walletId: string): Promise<Transaction[]> {

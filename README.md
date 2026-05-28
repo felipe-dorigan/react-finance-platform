@@ -64,6 +64,28 @@ npm run test        # roda testes uma vez
 npm run test:watch  # roda testes em watch
 ```
 
+## Rotas atuais
+
+Rotas hoje disponíveis na aplicação:
+
+- /: redireciona para /wallets/wallet-001/dashboard
+- /wallets/:walletId/dashboard: dashboard principal da carteira
+- /wallets/:walletId/transactions: tela base de transações
+- /wallets/:walletId/accounts: tela base de contas
+- /wallets/:walletId/cards: tela base de cartões
+- /wallets/:walletId/permissions: tela base de permissões
+- /wallet-not-found: fallback para carteira inexistente
+- /unauthorized: fallback para acesso sem permissão
+- /login: placeholder de autenticação
+
+Exemplos de acesso local:
+
+- http://127.0.0.1:5173/
+- http://127.0.0.1:5173/wallets/wallet-001/dashboard
+- http://127.0.0.1:5173/wallets/wallet-001/transactions
+
+Observacao: algumas rotas ainda estão em modo placeholder enquanto as próximas phases não são concluídas.
+
 ## Estrutura principal
 
 - [src/main.tsx](src/main.tsx): entrada da aplicacao
@@ -81,6 +103,40 @@ npm run test:watch  # roda testes em watch
 3. Validar com npm run test
 4. Garantir qualidade com npm run typecheck e npm run lint
 5. Antes de merge, validar build com npm run build
+
+## Como executar os testes
+
+Rodar toda a suíte:
+
+```bash
+npm run test
+```
+
+Rodar em modo watch:
+
+```bash
+npm run test:watch
+```
+
+Rodar um arquivo específico:
+
+```bash
+npm run test -- tests/integration/transactions/dashboardStates.test.tsx
+```
+
+Rodar vários arquivos específicos:
+
+```bash
+npm run test -- tests/integration/transactions/dashboardStates.test.tsx tests/integration/transactions/transactionHappyPath.test.tsx
+```
+
+Fluxo recomendado antes de subir mudanças:
+
+```bash
+npm run test
+npm run typecheck
+npm run lint
+```
 
 ## Documentacao da feature ativa
 
