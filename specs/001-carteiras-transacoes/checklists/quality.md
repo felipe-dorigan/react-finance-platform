@@ -99,3 +99,33 @@
 - Resolvidos nesta rodada: CHK001-CHK049, CHK055-CHK061.
 - Pendentes para detalhamento objetivo no plan: CHK050-CHK054.
 - Motivo dos pendentes: decisão explícita de postergar métricas e critérios detalhados de NFR (acessibilidade, observabilidade, integridade e performance) para a fase de planejamento técnico.
+
+## Constitution 2.1.0 Alignment Update (2026-05-28)
+
+### Requirement Completeness
+
+- [ ] CHK062 A spec explicita todos os sete grupos do baseline mínimo de testes de interface exigidos pela constituição? [Completeness, Spec §NFR-004, Constitution §IV]
+- [ ] CHK063 Os critérios de sucesso cobrem integralmente o baseline mínimo (renderização, validação, fluxo feliz, regra visual, estados, permissão e regressão de cálculo) sem lacunas? [Completeness, Spec §SC-001 a SC-007]
+- [ ] CHK064 A validação de formulário inclui explicitamente obrigatoriedade, formato de e-mail, valor numérico válido, datas válidas, erro por campo e bloqueio de envio inválido? [Completeness, Spec §NFR-003]
+
+### Requirement Clarity
+
+- [ ] CHK065 O termo baseline mínimo de testes de interface está definido de forma inequívoca para evitar interpretação divergente entre spec, plan e constitution? [Clarity, Spec §NFR-004, Plan §Technical Context, Constitution §IV]
+- [ ] CHK066 O escopo de proteção básica de permissão na UI está especificado com critérios observáveis no texto de requisitos (ocultar ação ou bloquear visualmente)? [Clarity, Spec §NFR-004, SC-006]
+- [ ] CHK067 A noção de regressão de cálculo exibido diferencia claramente atualização visual de tela versus regras de cálculo de domínio? [Clarity, Spec §NFR-004, SC-007, FR-016 a FR-018]
+
+### Requirement Consistency
+
+- [ ] CHK068 O requisito de testes mínimos (NFR-004) é consistente com os critérios de sucesso SC-001 a SC-007 sem duplicidade conflitante ou omissão? [Consistency, Spec §NFR-004, SC-001 a SC-007]
+- [ ] CHK069 A atualização da constitution 2.1.0 permanece consistente com o Constitution Check no plano para qualidade e gates de merge? [Consistency, Constitution §IV, Constitution §Fluxo de Entrega, Plan §Constitution Check]
+- [ ] CHK070 A mudança para baseline mínimo não conflita com requisitos funcionais já definidos para transações, permissões e consolidação financeira? [Consistency, Spec §FR-004 a FR-020B, FR-009 a FR-013, FR-015 a FR-018]
+
+### Acceptance Criteria Quality
+
+- [ ] CHK071 Cada critério SC-001 a SC-007 é objetivo e verificável sem depender de interpretação subjetiva do revisor? [Measurability, Spec §SC-001 a SC-007]
+- [ ] CHK072 Os critérios de sucesso descrevem evidência mínima observável para estados loading/empty/error e para regra visual de transferência? [Acceptance Criteria, Spec §SC-004, SC-005]
+
+### Dependencies & Assumptions
+
+- [ ] CHK073 A spec e o plan documentam de forma clara a dependência de CI para bloquear merge quando o baseline mínimo de testes falhar? [Dependency, Constitution §Fluxo de Entrega, Plan §Constitution Check]
+- [ ] CHK074 Há algum pressuposto implícito de cobertura de testes além do baseline mínimo que precise ser declarado explicitamente como fora de escopo desta rodada? [Assumption, Gap]

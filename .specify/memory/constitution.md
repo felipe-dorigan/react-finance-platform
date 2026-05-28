@@ -54,13 +54,13 @@ Semântica de navegação, incluindo deep links, back/forward e tratamento de 40
 estável entre versões, salvo nota de migração versionada.
 Rationale: navegação previsível é base de confiança e consistência do produto.
 
-### IV. Qualidade com Testes e CI como Gate Inegociável
+### IV. Qualidade com Testes Mínimos de Interface e CI
 
-O trabalho MUST seguir ciclo red-green-refactor para fluxos críticos: escrever teste falhando,
-implementar, refatorar. Toda feature MUST incluir testes unitários para lógica de negócio,
-testes de integração para interações de estado/roteamento e cobertura end-to-end para jornadas
-primárias. CI MUST bloquear merge em falha de typecheck, lint, testes ou build.
-Rationale: gates rígidos evitam regressões em fluxos financeiros sensíveis.
+O trabalho MUST garantir um baseline mínimo de testes de interface: renderização de telas críticas,
+validação de dados de formulário, fluxo feliz principal, regra visual de transferência, estados de
+loading/empty/error, proteção básica de permissão na UI e regressão de cálculo exibido. CI MUST
+bloquear merge em falha de typecheck, lint, build ou desses testes mínimos de interface.
+Rationale: reduz regressões visíveis ao usuário com escopo de qualidade enxuto e objetivo.
 
 ### V. Segurança, Acessibilidade e Observabilidade por Padrão
 
@@ -76,7 +76,9 @@ Rationale: software financeiro precisa ser seguro, inclusivo e observável.
 - Roteamento: React Router, com data APIs quando fizer sentido.
 - Estado assíncrono: TanStack Query.
 - Formulários e validação: React Hook Form + Zod.
-- Testes: Vitest + Testing Library para unit/integration, Playwright para end-to-end.
+- Testes: baseline mínimo obrigatório de interface (renderização crítica, validação de formulário,
+  fluxo feliz principal, regra visual de transferência, estados loading/empty/error, permissão na UI
+  e regressão de cálculo exibido).
 - Qualidade: ESLint + Prettier com configuração compartilhada no repositório.
 - UI opcional: Tailwind CSS e bibliotecas headless são permitidas quando reduzirem complexidade
   sem comprometer acessibilidade.
@@ -88,7 +90,7 @@ Rationale: software financeiro precisa ser seguro, inclusivo e observável.
 2. Design before implementation: contratos de dados, mapa de rotas e ownership de estado MUST
    ser definidos no plan.
 3. Vertical slices: priorizar jornadas independentes e testáveis.
-4. Mandatory checks before merge: lint, typecheck, tests, build e revisão de compliance com a
+4. Mandatory checks before merge: lint, typecheck, build, baseline mínimo de testes de interface e revisão de compliance com a
    constitution.
 5. Release readiness: quickstart e jornadas críticas MUST ser validadas antes de publicar.
 
@@ -110,4 +112,4 @@ Expectativas de revisão de compliance:
 - Todo pull request MUST incluir evidências de que os quality gates obrigatórios passaram.
 - Exceções MUST ser temporárias, documentadas e ligadas a follow-up tasks.
 
-**Version**: 1.2.0 | **Ratified**: 2026-05-26 | **Last Amended**: 2026-05-26
+**Version**: 2.1.0 | **Ratified**: 2026-05-26 | **Last Amended**: 2026-05-28

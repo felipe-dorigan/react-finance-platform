@@ -1,10 +1,10 @@
 # Feature Specification: Gestão de Carteiras, Contas e Transações
 
-**Feature Branch**: `[001-carteiras-transacoes]`
+**Feature Branch**: `001-carteiras-transacoes`
 
 **Created**: 2026-05-26
 
-**Status**: Draft
+**Status**: Pronto para implementação
 
 **Input**: User description: "quero coinstruir uma interface para gerenciar, transações (entradas, saídas, transferencia), contas (crud), quero que o usuario possa incluir mais de uma carteira (nome que irei chamar. A carteira é onde ele vai visualizar toda a operação financeira daquela carteira, ele poderá ter apenas duas carteiras. Ele pode definir um email de outra pessoa, que terá acesso a carteira especifica), vai ter cadastros de cartões. Cada transação vai ter um status (Efetivada, Pendente), vai ter um periodo(Diário, Semanal, Mensal e Anual)."
 
@@ -27,8 +27,15 @@
 - Q: Qual escopo mínimo obrigatório da visualização consolidada (FR-015)? -> A: Opção B confirmada. Exibir saldo principal, saldo projetado, total de entradas, total de saídas e total de transferências no período selecionado.
 - Q: Como resolver a duplicação entre FR-020 e FR-020A? -> A: Opção A confirmada. Consolidar em um único requisito: ao selecionar transferência, o campo de período deve ser limpo e oculto.
 - Q: Como definir formalmente a consistência de histórico financeiro no FR-002? -> A: Opção B confirmada. Arquivamento não altera lançamentos históricos; hard-delete remove vínculos permitidos e dispara recálculo completo da carteira atual.
+- Q: Qual detalhamento mínimo obrigatório deve constar em cada evento de auditoria? -> A: Cada evento de auditoria deve registrar walletId, autor (actorUserId ou e-mail), papel do autor (owner/read/edit/operate), ação exata, entidade afetada (entityType + entityId), timestamp e resumo estruturado das mudanças (changedFields) quando houver edição, mudança de status ou alteração de permissão.
+- Q: Qual cobertura mínima de acessibilidade deve ser obrigatória nas jornadas US1, US2 e US3? -> A: US1, US2 e US3 devem garantir navegação 100% por teclado, ordem de foco visível e lógica, labels programáticos em todos os campos e ações, mensagens de erro associadas ao campo e anunciadas, contraste mínimo WCAG 2.2 AA e, quando houver modais ou confirmações, aprisionamento de foco com retorno ao elemento de origem ao fechar.
 
-## User Scenarios & Testing _(mandatory)_
+### Session 2026-05-28
+
+- Q: Qual baseline mínimo de testes de interface deve ser adotado para a feature? -> A: Adotar sete frentes mínimas: renderização de telas críticas, validação de formulário, fluxo feliz de criação de transação, regra visual de transferência, estados de loading/empty/error, proteção básica de permissão na UI e regressão de cálculo exibido na tela.
+- Q: A validação de formulário continua obrigatória dentro do baseline mínimo? -> A: Sim. A validação de formulário permanece obrigatória, incluindo campos obrigatórios, formato de e-mail, valor numérico válido, datas válidas, mensagens de erro por campo e bloqueio de envio inválido.
+
+## User Scenarios _(mandatory)_
 
 ### User Story 1 - Operar uma carteira financeira (Priority: P1)
 
@@ -36,7 +43,7 @@ Como dono da carteira, quero criar e gerenciar minhas transações (entrada, sa�
 
 **Why this priority**: Este é o núcleo de valor da plataforma, sem o qual não há controle financeiro.
 
-**Independent Test**: Pode ser testado de ponta a ponta criando uma carteira, registrando transações de tipos diferentes e validando saldo, status e período de recorrência.
+**Teste mínimo de interface (US1)**: A UI de transações MUST carregar sem erro (dashboard, lista e formulários), validar dados de formulário, permitir fluxo feliz de criação (entrada e saída) com feedback visual de sucesso, aplicar regra visual de transferência (ocultar/limpar período e restaurar vazio ao voltar), exibir estados de loading/empty/error e refletir atualização de cálculos no resumo/lista após ações no formulário.
 
 **Acceptance Scenarios**:
 
@@ -53,7 +60,7 @@ Como dono da carteira, quero gerenciar contas e cartões para organizar melhor o
 
 **Why this priority**: Sem contas e cartões, o controle financeiro fica incompleto e menos realista.
 
-**Independent Test**: Pode ser testado com CRUD de contas e cartões, além da tentativa de criar uma terceira carteira para validar bloqueio de regra.
+**Teste mínimo de interface (US2)**: A UI de contas/cartões MUST validar dados de formulário e manter estados de carregamento, vazio e erro em listagens e formulários sem quebra de renderização.
 
 **Acceptance Scenarios**:
 
@@ -73,7 +80,7 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 
 **Why this priority**: A colaboração é um diferencial, mas pode ser entregue após o fluxo principal de operação financeira.
 
-**Independent Test**: Pode ser testado convidando um e-mail, atribuindo permissão, alterando permissão depois e validando as restrições de dono.
+**Teste mínimo de interface (US3)**: A UI de convite/permissão MUST validar dados de formulário e aplicar proteção básica de permissão na interface (ocultar ações restritas ou exibir bloqueio visual claro quando o usuário não tiver acesso).
 
 **Acceptance Scenarios**:
 
@@ -116,7 +123,7 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 - **FR-011**: Permissão de leitura+edição MUST permitir criar e editar transações, contas e cartões, sem permitir exclusão desses registros.
 - **FR-012**: Permissão de acesso total operacional MUST permitir criar, editar e excluir transações/contas/cartões, além de gerenciar convites e permissões da carteira.
 - **FR-013**: Independentemente da permissão concedida, convidados MUST NOT excluir carteira nem alterar configuração estrutural da carteira.
-- **FR-014**: O sistema MUST auditar todas as ações de CRUD de conta/cartão, criação/edição/exclusão de transações, mudanças de status Efetivada/Pendente, convites e alterações de permissão, distinguindo operações do dono e de convidados.
+- **FR-014**: O sistema MUST auditar todas as ações de CRUD de conta/cartão, criação/edição/exclusão de transações, mudanças de status Efetivada/Pendente, convites e alterações de permissão, distinguindo operações do dono e de convidados. Cada evento MUST registrar `walletId`, autor (`actorUserId` ou e-mail), papel do autor (`owner`, `read`, `edit`, `operate`), ação exata, entidade afetada (`entityType` + `entityId`), timestamp e `changedFields` estruturado quando houver edição, mudança de status ou alteração de permissão.
 - **FR-014A**: Registros de auditoria MUST ser imutáveis e MUST NOT ser removidos por exclusão de contas, cartões ou transações de negócio.
 - **FR-015**: O sistema MUST oferecer visualização consolidada das operações financeiras por carteira com, no mínimo, saldo principal, saldo projetado, total de entradas, total de saídas e total de transferências no período selecionado.
 - **FR-016**: O sistema MUST manter dois indicadores distintos de saldo por carteira: saldo principal e saldo projetado.
@@ -152,29 +159,20 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 
 - **NFR-001 Financial Integrity**: Cálculos de saldo e transferência devem manter precisão decimal e rastreabilidade de origem/destino por carteira.
 - **NFR-002 Security & Privacy**: Convites por e-mail e permissões devem ser aplicados por carteira, sem expor dados de outras carteiras do mesmo usuário.
-- **NFR-003 Accessibility**: Fluxos de cadastro e gestão de transações, contas, cartões e permissões devem ser operáveis por teclado e com rótulos semânticos claros.
-- **NFR-004 Observability**: Ações críticas (criação/edição/exclusão lógica, convite e mudança de permissão) devem gerar eventos auditáveis.
-- **NFR-005 Performance**: A listagem principal de transações por carteira deve carregar em até 2 segundos em condições normais de uso, com validação em ambiente padrão usando no mínimo 50 execuções e aprovação quando p90 <= 2s.
+- **NFR-003 Form Validation**: Formulários da feature MUST validar dados de entrada antes do envio e exibir mensagens de erro por campo quando houver inconsistência, cobrindo no mínimo campos obrigatórios, formato de e-mail, valor numérico válido e datas válidas.
+- **NFR-004 Minimum UI Test Coverage**: A feature MUST manter cobertura mínima de testes de interface para: renderização de telas críticas, fluxo feliz de criação de transação, regra visual de transferência, estados de loading/empty/error, proteção básica de permissão na UI e regressão de cálculo exibido na tela.
 
 ## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
-- **SC-001**: 95% dos usuários conseguem criar uma carteira, cadastrar ao menos uma conta e registrar uma transação em menos de 5 minutos.
-- **SC-002**: 100% das transferências válidas entre contas da mesma carteira atualizam saldos de origem e destino sem divergência.
-- **SC-003**: 100% das tentativas de criação de terceira carteira são bloqueadas com mensagem clara de regra de limite.
-- **SC-004**: 100% das tentativas de convidado excluir carteira são bloqueadas com retorno explícito de permissão insuficiente.
-- **SC-005**: Em cenário padrão, o histórico de transações por carteira é aprovado quando p90 do tempo de resposta é <= 2 segundos em amostra mínima de 50 execuções.
-- **SC-006**: 100% das transações pendentes alteram apenas o saldo projetado, sem alterar o saldo principal até efetivação.
-- **SC-007**: 100% das ações de convidados respeitam a matriz de permissões (leitura, leitura+edição, acesso total operacional) sem violação de poderes estruturais da carteira.
-- **SC-008**: 100% das transferências registradas são tratadas como transações pontuais sem recorrência.
-- **SC-009**: 100% das tentativas de uso de conta ou cartão inativo em novos lançamentos são bloqueadas.
-- **SC-010**: 100% das exclusões definitivas de conta/cartão disparam recálculo de saldos e agregados da carteira sem inconsistência.
-- **SC-011**: 100% das tentativas de exclusão de conta com cartão vinculado são bloqueadas com mensagem de ação necessária.
-- **SC-012**: 100% dos estornos de cartão são registrados como entrada e respeitam limite de estorno parcial/total da despesa original.
-- **SC-013**: 100% das ações auditáveis definidas em FR-014 geram registro de auditoria com autoria e entidade afetada.
-- **SC-014**: 100% das alternâncias para transferência ocultam e limpam o campo de período; 100% das alternâncias de volta para entrada/saída exibem o campo vazio.
-- **SC-015**: 100% das exclusões de registros de negócio preservam os logs de auditoria previamente gerados.
+- **SC-001**: 100% dos formulários da feature bloqueiam envio de dados inválidos e exibem mensagens de erro por campo para correção.
+- **SC-002**: 100% das telas críticas da feature (dashboard, lista de transações e formulários) renderizam sem erro em testes de interface.
+- **SC-003**: 100% dos fluxos felizes de criação de entrada e saída exibem feedback visual de sucesso.
+- **SC-004**: 100% das alternâncias para transferência ocultam e limpam o campo de período; 100% das alternâncias de volta para entrada/saída exibem o campo vazio.
+- **SC-005**: 100% das listagens da feature cobrem e exibem corretamente estados de loading, empty state e erro de API.
+- **SC-006**: 100% dos cenários de usuário sem permissão na UI ocultam ações restritas ou exibem bloqueio visual claro.
+- **SC-007**: 100% dos cenários de atualização via formulário refletem os novos cálculos no resumo e na lista exibida.
 
 ## Assumptions
 

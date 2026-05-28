@@ -1,61 +1,135 @@
-# Research: Gestão de Carteiras, Contas e Transações
+# Research: Gestao de Carteiras, Contas e Transacoes
 
-## 1) Cálculo monetário e reconciliação de saldos
+## 1) Calculo monetario e reconciliacao de saldos
 
-Decision: Usar `decimal.js` para toda operação monetária e armazenar valores como string decimal no estado da aplicação.
+Decision: Usar `decimal.js` para toda operacao monetaria e armazenar valores como string decimal no estado/apis mock.
 
-Rationale: Evita erros de ponto flutuante em somas/subtrações repetidas, especialmente no recálculo após exclusões e em transferências com rastreabilidade.
+Rationale: Evita erros de ponto flutuante em somas/subtracoes repetidas, especialmente no recalculo apos hard-delete.
 
-Alternatives considered: `number` nativo (rejeitado por imprecisão); `bigint` (rejeitado por não lidar com casas decimais sem camada extra);
-`dinero.js` (viável, mas com curva maior para o escopo inicial).
+Alternatives considered: `number` nativo (rejeitado por imprecisao), `bigint` (rejeitado por complexidade com casas decimais), `dinero.js` (viavel, mas excede escopo inicial).
 
 ## 2) Modelagem de saldo principal vs saldo projetado
 
-Decision: Manter dois agregadores por carteira: `mainBalance` (somente Efetivada) e `projectedBalance` (Efetivada + Pendente).
+Decision: Manter dois agregadores por carteira: `mainBalance` (somente `effective`) e `projectedBalance` (`effective` + `pending`).
 
-Rationale: Reflete diretamente FR-016/017/018 e reduz ambiguidade na UI. Regras de reconciliação ficam determinísticas por status.
+Rationale: Reflete FR-016/017/018 com regra deterministica por status.
 
-Alternatives considered: Um único saldo com filtros dinâmicos (rejeitado por risco de inconsistência perceptiva e cálculos duplicados na UI).
+Alternatives considered: Um unico saldo com filtros dinamicos (rejeitado por ambiguidade e risco de inconsistencia).
 
-## 3) Estratégia de mock de API
+## 3) Estrategia de auditoria transversal por dominio
 
-Decision: Usar MSW com fixtures JSON versionadas por cenário (`happy-path`, `permission-denied`, `validation-errors`, `recalculation`).
+Decision: Adotar um contrato unico de `AuditEvent` para cinco dominios: conta, cartao, transacao, convite e permissao.
 
-Rationale: Permite simular latência, erros e respostas consistentes sem backend real, mantendo contrato de API estável para futura integração.
+Rationale: Garante cobertura uniforme de FR-014/FR-014A e reduz lacunas entre modulos.
 
-Alternatives considered: Mock local em memória sem interceptação HTTP (mais simples, porém menos aderente ao fluxo real de integração).
+Alternatives considered: Logs independentes por dominio (rejeitado por dificuldade de consulta consolidada e risco de schema divergente).
 
-## 4) Permissões colaborativas por carteira
+Escopo minimo de acoes auditadas:
 
-Decision: Definir matriz de permissões no frontend com `role` por convite (`read`, `edit`, `operate`) e guardas centralizados em helpers.
+- Conta: criar, editar, arquivar, reativar, excluir.
+- Cartao: criar, editar, arquivar, reativar, excluir, alterar conta de debito.
+- Transacao: criar, editar, excluir, alterar status `effective`/`pending`.
+- Convite: enviar, reenviar, revogar, aceitar.
+- Permissao: alterar nivel de acesso.
 
-Rationale: Evita regras espalhadas em componentes e facilita testes de autorização por ação.
+Campos obrigatorios por evento:
 
-Alternatives considered: Regras inline por componente (rejeitado por duplicação e risco de divergência de comportamento).
+- `walletId`
+- autoria (`actorUserId` ou email)
+- `actorRole`
+- `action`
+- `entityType` + `entityId`
+- `timestamp`
+- `changedFields` estruturado quando aplicavel
 
-## 5) Roteamento e proteção de rotas
+## 4) Terminologia de permissoes (unificada)
 
-Decision: Organizar rotas por carteira (`/wallets/:walletId/...`) com autenticação simulada, guard de acesso por role e error boundaries por segmento.
+Decision: Canonizar nomenclatura de produto em portugues e manter enum tecnico interno.
 
-Rationale: Suporta deep-link, back/forward estável e tratamento explícito de acesso negado/404.
+Rationale: Evita ambiguidade entre UX, regra de negocio e contrato de API.
 
-Alternatives considered: Checagem de permissão apenas no carregamento de página (rejeitado por fragilidade em navegação interna).
+Alternatives considered: Expor apenas nomes tecnicos (`read/edit/operate`) na UI (rejeitado por baixa clareza para usuario final).
 
-## 6) Formulários e validação de domínio
+Mapa oficial:
 
-Decision: RHF + Zod com validação condicional para transação: se tipo `transfer`, ocultar e limpar `period`; ao voltar para `income/expense`, exibir `period` vazio.
+- `leitura` -> `read`
+- `leitura+edicao` -> `edit`
+- `acesso_total_operacional` -> `operate`
 
-Rationale: Atende FR-019/020/020A/020B com previsibilidade de estado e bloqueio de payload inválido.
+## 5) Roteamento e protecao de rotas
 
-Alternatives considered: Apenas validação no submit sem controle de estado do campo (rejeitado por UX inconsistente).
+Decision: Rotas por carteira (`/wallets/:walletId/...`) com guardas de autenticacao, autorizacao por papel e error boundaries por segmento.
 
-## 7) Estratégia de testes
+Rationale: Suporta deep-link estavel e bloqueios de acesso previsiveis.
 
-Decision: 
-- Unit: cálculos de saldo, recálculo pós-exclusão, validações de estorno e regras de permissão.
-- Integration: formulários + roteamento + store/query + handlers MSW.
-- E2E: jornadas P1/P2/P3 da spec com dados mockados.
+Alternatives considered: Checagem de permissao apenas no carregamento inicial (rejeitado por fragilidade em navegacao interna).
 
-Rationale: Cobertura alinhada aos gates de qualidade da constitution para fluxos financeiros críticos.
+## 6) Formularios e validacao de dominio
 
-Alternatives considered: Somente e2e (rejeitado por custo/manutenção) ou somente unit (rejeitado por baixa confiança em integrações).
+Decision: RHF + Zod com validacao condicional de transacao: `transfer` sempre sem `period`; alternancia para `income/expense` reexibe `period` vazio.
+
+Rationale: Atende FR-019/FR-020/FR-020B e impede payload inconsistente.
+
+Alternatives considered: Validacao apenas no submit (rejeitado por UX inconsistente e maior risco de regressao).
+
+## 7) Estrategia de testes minima de interface
+
+Decision: Adotar baseline minimo com sete frentes obrigatorias de teste de interface: (1) renderizacao de telas criticas, (2) validacao de formulario, (3) fluxo feliz de criacao de transacao, (4) regra visual de transferencia, (5) estados loading/empty/error, (6) protecao basica de permissao na UI, (7) regressao de calculo exibido em resumo/lista.
+
+Rationale: Alinha spec e constitution 2.1.0 com um gate enxuto de qualidade focado no que o usuario percebe em tela.
+
+Alternatives considered: Suite ampla por camadas (unit/integration/contract/E2E) como obrigatoria de merge (rejeitado por custo de execucao e por nao refletir a decisao atual de escopo minimo).
+
+Plano de evidencia:
+
+- Testes de interface cobrindo as sete frentes minimas em componentes/telas criticas.
+- Assert de validacao por campo com bloqueio de submit invalido.
+- Assert de atualizacao visual de resumo/lista apos mutacao.
+
+## 8) Acessibilidade e observabilidade fora do gate minimo
+
+Decision: Manter acessibilidade e observabilidade como diretrizes de implementacao e boas praticas de produto, sem torná-las parte obrigatoria do gate minimo de testes definido nesta fase.
+
+Rationale: Preserva qualidade arquitetural sem conflitar com a decisao de baseline de testes minimo.
+
+Alternatives considered: Tornar a11y/observabilidade obrigatorias no gate desta fase (rejeitado por desalinhamento com a clarificacao recente da spec).
+
+## 9) Arquitetura de observabilidade
+
+Decision: Separar observabilidade em dois fluxos distintos: telemetria estruturada para eventos de uso e desempenho, e sinais de erro para falhas recuperáveis e não recuperáveis. Ambos carregam contexto de rota, carteira e sessão, mas nunca misturam payload operacional de negócio com trilha de auditoria.
+
+Rationale: Telemetria e auditoria têm finalidades diferentes. A telemetria mede comportamento e saúde do fluxo; a auditoria prova responsabilidade sobre mutações de negócio. Separar esses fluxos reduz ruído, facilita retenção e evita acoplamento entre métricas operacionais e histórico financeiro imutável.
+
+Alternatives considered: Auditoria única para tudo (rejeitada por excesso de ruído e dificuldade de retenção), console logging ad hoc (rejeitado por baixa rastreabilidade) e sinais de erro sem contexto de carteira/rota (rejeitado por diagnóstico fraco).
+
+Contrato mínimo proposto:
+
+- `TelemetryEvent`: `eventName`, `category`, `walletId?`, `route`, `sessionId`, `correlationId`, `occurredAt`, `properties` sanitizadas.
+- `ErrorSignal`: `source`, `errorCode`, `message`, `severity`, `walletId?`, `route`, `sessionId`, `correlationId`, `occurredAt`, `stack?` sanitizado.
+
+Regras:
+
+- Nunca registrar segredo, token ou dado sensível em telemetria.
+- Toda falha que aciona UI de erro deve gerar sinal observável correlacionável.
+- Os logs de auditoria permanecem separados e imutáveis.
+
+## 10) Persistência e imutabilidade
+
+Decision: Adotar modelo híbrido: hard-delete remove registros de negócio vinculados das coleções operacionais da carteira (conforme FR-025/FR-026), enquanto journal, auditoria e observabilidade permanecem append-only e imutáveis.
+
+Rationale: O domínio precisa cumprir exclusão definitiva de negócio sem perder trilha de responsabilidade e diagnóstico. Separar estado operacional (mutável para hard-delete) de trilhas técnicas (imutáveis) resolve a ambiguidade entre FR-025/FR-026 e FR-014A.
+
+Alternatives considered: Atualização in-place de tabelas mutáveis (rejeitada por perda de rastreabilidade), soft-delete como única estratégia (rejeitada porque não cobre hard-delete exigido), e guardar apenas o estado final atual (rejeitado por não permitir recálculo confiável).
+
+Modelo mínimo de persistência:
+
+- `WalletMutationJournal`: registro append-only de mutações de conta, cartão, transação, convite e permissão.
+- `WalletSnapshot`: projeção derivada de saldos e totais por carteira.
+- `AuditEvent`: trilha imutável de responsabilidade sobre ações auditáveis.
+
+Regras:
+
+- Nenhum evento de auditoria, telemetria ou erro é apagado por exclusão de registros de negócio.
+- Hard-delete remove registros vinculados de conta/cartão/transação/refund na camada operacional e registra mutação de exclusão no journal.
+- Recalcular a carteira atual significa recompor as projeções a partir do journal e do estado operacional remanescente, sem alterar fatos técnicos anteriores.
+- Snapshot é derivado, não fonte de verdade.

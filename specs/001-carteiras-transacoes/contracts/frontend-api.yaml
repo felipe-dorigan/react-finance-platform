@@ -79,6 +79,19 @@ paths:
         "201":
           description: Conta criada
 
+  /wallets/{walletId}/accounts/{accountId}:
+    delete:
+      summary: Exclui conta definitivamente (hard-delete)
+      description: Remove a conta e entradas/saídas/transferências vinculadas na carteira atual, com recálculo dos agregados.
+      parameters:
+        - $ref: "#/components/parameters/WalletId"
+        - $ref: "#/components/parameters/AccountId"
+      responses:
+        "200":
+          description: Conta e vínculos removidos com recálculo concluído
+        "409":
+          description: Conta possui cartão vinculado e exclusão foi bloqueada
+
   /wallets/{walletId}/cards:
     get:
       summary: Lista cartões da carteira
@@ -108,6 +121,17 @@ paths:
           description: Cartão criado
         "422":
           description: Conta de débito inválida/inativa
+
+  /wallets/{walletId}/cards/{cardId}:
+    delete:
+      summary: Exclui cartão definitivamente (hard-delete)
+      description: Remove o cartão e despesas/estornos vinculados na carteira atual, com recálculo dos agregados.
+      parameters:
+        - $ref: "#/components/parameters/WalletId"
+        - $ref: "#/components/parameters/CardId"
+      responses:
+        "200":
+          description: Cartão e vínculos removidos com recálculo concluído
 
   /wallets/{walletId}/transactions:
     get:
@@ -174,6 +198,23 @@ paths:
         "201":
           description: Convite criado
 
+  /wallets/{walletId}/invites:
+    post:
+      summary: Envia convite para colaboracao da carteira
+      parameters:
+        - $ref: "#/components/parameters/WalletId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInviteRequest"
+      responses:
+        "201":
+          description: Convite criado
+        "200":
+          description: Convite atualizado para novo papel
+
   /wallets/{walletId}/audit-events:
     get:
       summary: Lista eventos de auditoria da carteira
@@ -189,11 +230,51 @@ paths:
                 items:
                   $ref: "#/components/schemas/AuditEvent"
 
+  /telemetry/events:
+    post:
+      summary: Registra evento estruturado de telemetria do cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TelemetryEvent"
+      responses:
+        "202":
+          description: Evento aceito para processamento assíncrono
+
+  /error-signals:
+    post:
+      summary: Registra sinal de erro observável do cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorSignal"
+      responses:
+        "202":
+          description: Sinal de erro aceito para processamento assíncrono
+
 components:
   parameters:
     WalletId:
       in: path
       name: walletId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AccountId:
+      in: path
+      name: accountId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    CardId:
+      in: path
+      name: cardId
       required: true
       schema:
         type: string
@@ -300,11 +381,14 @@ components:
         role:
           type: string
           enum: [read, edit, operate]
+        roleLabel:
+          type: string
+          enum: [leitura, leitura+edicao, acesso_total_operacional]
+          description: Rotulo canonico exibido ao usuario para o nivel de permissao.
 
     AuditEvent:
       type: object
-      required:
-        [id, walletId, actorUserId, action, entityType, entityId, occurredAt]
+      required: [id, walletId, action, entityType, entityId, occurredAt]
       properties:
         id:
           type: string
@@ -312,15 +396,102 @@ components:
           type: string
         actorUserId:
           type: string
+          nullable: true
+        actorEmail:
+          type: string
+          format: email
+          nullable: true
+        actorRole:
+          type: string
+          enum: [owner, read, edit, operate]
         action:
           type: string
         entityType:
           type: string
+          enum: [account, card, transaction, invite, permission]
         entityId:
           type: string
+        changedFields:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/ChangedField"
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
         occurredAt:
           type: string
           format: date-time
+
+    TelemetryEvent:
+      type: object
+      required: [id, route, eventName, category, occurredAt]
+      properties:
+        id:
+          type: string
+        walletId:
+          type: string
+          nullable: true
+        sessionId:
+          type: string
+        correlationId:
+          type: string
+        route:
+          type: string
+        eventName:
+          type: string
+        category:
+          type: string
+        properties:
+          type: object
+          nullable: true
+          additionalProperties: true
+        occurredAt:
+          type: string
+          format: date-time
+
+    ErrorSignal:
+      type: object
+      required: [id, source, errorCode, message, severity, occurredAt]
+      properties:
+        id:
+          type: string
+        walletId:
+          type: string
+          nullable: true
+        sessionId:
+          type: string
+        correlationId:
+          type: string
+        route:
+          type: string
+        source:
+          type: string
+        errorCode:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, error, critical]
+        stack:
+          type: string
+          nullable: true
+        occurredAt:
+          type: string
+          format: date-time
+
+    ChangedField:
+      type: object
+      required: [field, from, to]
+      properties:
+        field:
+          type: string
+        from:
+          nullable: true
+        to:
+          nullable: true
 
     CreateAccountRequest:
       type: object
@@ -368,6 +539,17 @@ components:
           nullable: true
 
     UpsertPermissionRequest:
+      type: object
+      required: [invitedEmail, role]
+      properties:
+        invitedEmail:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [read, edit, operate]
+
+    CreateInviteRequest:
       type: object
       required: [invitedEmail, role]
       properties:

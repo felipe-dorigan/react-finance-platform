@@ -1,180 +1,117 @@
 # Implementation Plan: Gestão de Carteiras, Contas e Transações
 
-**Branch**: `001-create-feature-branch` | **Date**: 2026-05-27 | **Spec**: [spec.md](spec.md)
+**Branch**: `001-create-feature-branch` | **Date**: 2026-05-28 | **Spec**: [specs/001-carteiras-transacoes/spec.md](specs/001-carteiras-transacoes/spec.md)
 
-**Input**: Feature specification from [spec.md](spec.md)
+**Input**: Feature specification from [specs/001-carteiras-transacoes/spec.md](specs/001-carteiras-transacoes/spec.md)
 
 ## Summary
 
-React Finance Platform é uma aplicação web de gestão financeira integrada que permite ao usuário gerenciar até 2 carteiras com contas, cartões e transações (entradas, saídas e transferências). Suporta colaboração segura via convites por email com controle de permissões granulares (leitura, edição, operacional). Cada transação possui status (Efetivada/Pendente), e as transações recorrentes (diárias, semanais, mensais, anuais) aplicam-se apenas a entradas e saídas, nunca a transferências. O saldo é dual: saldo principal (apenas Efetivada) e saldo projetado (Efetivada + Pendente), garantindo precisão monetária e rastreabilidade de todas as operações.
+Implementar uma SPA React para gestão financeira por carteira (limite de 2), cobrindo contas, cartões, transações, permissões por convite e auditoria imutável, com recálculo determinístico por carteira e baseline mínimo obrigatório de testes de interface definido na spec e na constitution 2.1.0.
 
 ## Technical Context
 
-**Language/Version**: React 19+ com TypeScript strict (5.5+)
+**Language/Version**: TypeScript strict com React 19+
 
-**Primary Dependencies**: 
-- React Router 7+ (roteamento e navegação)
-- TanStack Query v5+ (estado assíncrono e sincronização)
-- React Hook Form 7+ + Zod 3+ (formulários e validação)
-- decimal.js 10+ (cálculos monetários com precisão)
-- MSW 2+ (mock de API e testes)
-- Vitest 1+ + React Testing Library (testes)
-- Playwright 1.40+ (E2E)
+**Primary Dependencies**: Vite, React Router, TanStack Query, React Hook Form, Zod, MSW, decimal.js, date-fns, Zustand, Vitest, Testing Library
 
-**Storage**: LocalStorage + JSON fixtures versionadas para MVP; integração com backend REST será feita após stabilização da API de contratos
+**Storage**: Persistência mockada no cliente por carteira, com camada operacional mutável (hard-delete de negócio) e trilhas técnicas append-only (`WalletMutationJournal`, `AuditEvent`, `TelemetryEvent`, `ErrorSignal`)
 
-**Testing**: Vitest + React Testing Library (unit/integration), Playwright (end-to-end)
+**Testing**: Baseline mínimo de testes de interface: renderização de telas críticas, validação de formulário, fluxo feliz de transação, regra visual de transferência, estados loading/empty/error, proteção de permissão na UI e regressão de cálculo exibido
 
-**Target Platform**: Web browser moderno (Chrome 120+, Firefox 121+, Safari 17+, Edge 120+); responsive mobile-first
+**Target Platform**: Aplicação web SPA
 
-**Project Type**: Web application (SPA - Single Page Application)
+**Project Type**: web application
 
-**Performance Goals**: 
-- Cálculo de saldos: < 100ms para carteira com até 1000 transações
-- Renderização de listas: 60 fps com scroll em históricos de até 500 transações visíveis
-- Validação de formulários: resposta instantânea (<50ms) em mudanças de campo
+**Performance Goals**: UI estável com feedback imediato de formulário e atualização de resumo/lista após mutações
 
-**Constraints**: 
-- Máximo 2 carteiras por usuário (regra de negócio rígida)
-- Valores monetários sempre com 2 casas decimais (BRL)
-- Fusos horários explícitos em todas as datas (ISO-8601 com TZ)
-- Auditoria imutável de todas as ações CRUD críticas
-- Sem permissão de exclusão de carteira para convidados
+**Constraints**: aritmética decimal-safe, recálculo restrito à carteira atual, separação entre auditoria e observabilidade, validação de fronteira com schema, política de testes mínimos da constitution 2.1.0
 
-**Scale/Scope**: 
-- ~15-20 telas principais (wallets, accounts, cards, transactions, collaborators, settings)
-- ~40-50 componentes reutilizáveis
-- ~30-40 hooks customizados para lógica de negócio
-- ~100-150 testes unitários + integração, 10-15 jornadas E2E
+**Scale/Scope**: até 2 carteiras por usuário, múltiplas contas/cartões por carteira, matriz de permissões (`read`, `edit`, `operate`), auditoria de mutações e visão consolidada financeira
+
+## Routing Outline
+
+- `/wallets/:walletId/dashboard` para visão consolidada e indicadores de saldo.
+- `/wallets/:walletId/transactions` para entradas/saídas/transferências.
+- `/wallets/:walletId/accounts` para gestão de contas e estados ativo/inativo.
+- `/wallets/:walletId/cards` para gestão de cartões e conta de débito vinculada.
+- `/wallets/:walletId/permissions` para convites e permissões por e-mail.
+- `/wallets/:walletId/settings` para gestão de itens arquivados.
+- `/wallets/:walletId/audit` para trilha de auditoria imutável.
+
+Regras de navegação:
+
+- autenticação antes de rotas de carteira;
+- guarda por papel para ações restritas;
+- error boundaries por segmento de carteira;
+- deep links preservando `walletId` com fallback seguro quando acesso for negado.
 
 ## Constitution Check
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-✅ **Financial integrity gate**: Uso de `decimal.js` para toda operação monetária (somas, subtrações, recálculos). Dois agregadores por carteira: `mainBalance` (Efetivada) e `projectedBalance` (Efetivada + Pendente). Reconciliação determinística com recálculo completo após exclusões hard-delete. Datas em ISO-8601 com TZ explícito.
+Pre-Phase 0:
 
-✅ **React architecture gate**: 
-- Server state em TanStack Query (sincronização com MSW/backend)
-- Form state em React Hook Form
-- Global/UI state em Context (minimal) ou Zustand se necessário
-- Validação em fronteiras com schemas Zod compartilhados
-- Componentes focados em apresentação, regras de negócio em hooks/services
+- Financial integrity gate: PASS. Modelo de saldo principal/projetado e recálculo por carteira estão definidos com `decimal.js` e regras de status.
+- React architecture gate: PASS. Ownership de estado definido (`TanStack Query` server state, `RHF` form state, store mínimo para UI/sessão) e validação por Zod.
+- Routing contract gate: PASS. Mapa de rotas com guardas, boundaries e deep links por `walletId` documentado.
+- Quality gate: PASS. Estratégia de testes alinhada à constitution 2.1.0 com baseline mínimo de interface e gate obrigatório em CI.
+- Security/a11y/observability gate: PASS. Sanitização nas fronteiras, segregação auditoria x observabilidade e emissões correlacionáveis por rota/carteira/sessão.
 
-✅ **Routing contract gate**: 
-- Mapa de rotas por carteira: `/wallets/:walletId/...`
-- Autenticação simulada em dev (token em localStorage)
-- Guards por role (read/edit/operate) centralizados em helpers
-- Error boundaries por segmento
-- Deep-link e back/forward estável
-- 404 tratado explicitamente
+Post-Phase 1 re-check:
 
-✅ **Quality gate**: 
-- Unit tests: cálculos de saldo, recálculo pós-exclusão, validações de permissão
-- Integration tests: formulários + roteamento + TanStack Query + MSW handlers
-- E2E tests: jornadas P1/P2/P3 com dados mockados
-- CI gates: typecheck, lint, testes, build obrigatórios antes de merge
-
-✅ **Security/a11y/observability gate**: 
-- Dados sensíveis minimizados no cliente; auth via simulação (dev) ou JWT (produção)
-- Validação e sanitização de entradas em fronteiras
-- WCAG 2.2 AA: navegação por teclado, labels semânticos, contrast ratio
-- Telemetria estruturada de ações críticas (criar/editar/deletar transação, convites, alterações de permissão)
-- Erro centralizado em logger com stack trace
+- PASS mantido. `research.md`, `data-model.md`, `quickstart.md` e `contracts/frontend-api.yaml` permanecem consistentes com os princípios I-V e com a política de testes mínimos de interface.
 
 ## Project Structure
 
 ### Documentation (this feature)
 
-```
+```text
 specs/001-carteiras-transacoes/
-├── plan.md              # Este arquivo
-├── research.md          # Decisões técnicas: decimal.js, saldo dual, MSW, permissões, roteamento, validação, testes
-├── data-model.md        # Entidades: User, Wallet, WalletPermission, Account, Card, Transaction, Refund
-├── quickstart.md        # Guia de início rápido para desenvolvimento local
-├── spec.md              # Requisitos funcionais, histórias de usuário, edge cases
+├── plan.md
+├── research.md
+├── data-model.md
+├── quickstart.md
 ├── contracts/
-│   └── frontend-api.yaml  # Contrato de API: endpoints, payloads, respostas, erros
-├── tasks.md             # Tarefas executáveis (será gerado por /speckit.tasks)
-└── checklists/
-    ├── requirements.md   # Checklist de requisitos
-    └── quality.md        # Checklist de qualidade
+│   └── frontend-api.yaml
+└── tasks.md
 ```
 
 ### Source Code (repository root)
 
-```
-react-finance-platform/
-├── src/
-│   ├── components/           # Componentes React reutilizáveis
-│   │   ├── common/          # Componentes comuns (Button, Modal, Input, etc.)
-│   │   ├── layout/          # Layout (Header, Sidebar, MainContent)
-│   │   └── features/        # Componentes específicos por feature
-│   │       ├── wallets/
-│   │       ├── accounts/
-│   │       ├── cards/
-│   │       ├── transactions/
-│   │       └── collaborators/
-│   ├── pages/               # Páginas (1:1 com rotas)
-│   │   ├── WalletsPage.tsx
-│   │   ├── AccountsPage.tsx
-│   │   ├── TransactionsPage.tsx
-│   │   └── [...]
-│   ├── hooks/               # Hooks customizados
-│   │   ├── useWallets.ts
-│   │   ├── useAccounts.ts
-│   │   ├── useTransactions.ts
-│   │   ├── usePermissions.ts
-│   │   └── [...]
-│   ├── services/            # Lógica de negócio
-│   │   ├── balanceCalculator.ts   # Cálculos com decimal.js
-│   │   ├── transactionRecalculator.ts
-│   │   ├── permissionHelper.ts
-│   │   └── [...]
-│   ├── schemas/             # Validação com Zod
-│   │   ├── transactionSchema.ts
-│   │   ├── accountSchema.ts
-│   │   └── [...]
-│   ├── types/               # TypeScript tipos globais
-│   │   └── domain.ts
-│   ├── api/                 # Cliente HTTP e handlers MSW
-│   │   ├── client.ts
-│   │   ├── mocks/
-│   │   │   ├── handlers.ts
-│   │   │   └── fixtures/
-│   │   │       ├── happy-path.json
-│   │   │       ├── permission-denied.json
-│   │   │       └── [...]
-│   │   └── queries.ts
-│   ├── router/              # Configuração de rotas
-│   │   ├── routes.tsx
-│   │   └── guards.ts
-│   ├── store/               # Estado global (Context ou Zustand)
-│   │   └── authStore.ts
-│   ├── App.tsx
-│   └── main.tsx
-├── tests/
-│   ├── unit/                # Testes unitários
-│   │   ├── balanceCalculator.test.ts
-│   │   ├── permissionHelper.test.ts
-│   │   └── [...]
-│   ├── integration/         # Testes de integração
-│   │   ├── walletFlow.test.ts
-│   │   ├── transactionFlow.test.ts
-│   │   └── [...]
-│   └── e2e/                 # Testes end-to-end (Playwright)
-│       ├── userJourney.spec.ts
-│       ├── collaborationFlow.spec.ts
-│       └── [...]
-├── public/                  # Assets estáticos
-├── package.json
-├── tsconfig.json
-├── vitest.config.ts
-├── playwright.config.ts
-└── README.md
+```text
+src/
+├── app/
+│   └── router/
+├── features/
+│   ├── wallets/
+│   ├── accounts/
+│   ├── cards/
+│   ├── transactions/
+│   ├── invitations/
+│   ├── permissions/
+│   ├── audit/
+│   ├── observability/
+│   └── persistence/
+├── schemas/
+├── services/
+│   ├── api/
+│   └── mock/
+├── shared/
+└── store/
+
+tests/
+├── integration/
+└── unit/
 ```
 
-**Structure Decision**: Arquitetura de SPA moderna com separação clara entre componentes de apresentação, hooks customizados, serviços de negócio e schemas de validação. Testes organizados por camada (unit, integration, e2e). Estado assíncrono centralizado em TanStack Query, estado local em React Hook Form, estado global mínimo em Context/Zustand.
+**Structure Decision**: arquitetura de frontend único em React com separação por domínio em `src/features`, contrato mock em `specs/001-carteiras-transacoes/contracts/frontend-api.yaml` e foco de validação em testes de interface mínimos definidos na spec.
+
+## Phase Outputs
+
+- Phase 0 (Research): atualizar decisões para refletir baseline mínimo de testes de interface e remover obrigações de suítes mais amplas como requisito de gate.
+- Phase 1 (Design): manter modelo de dados e contrato da API; ajustar quickstart para execução e evidência dos sete testes mínimos de interface.
+- Agent context: referência de plano em [.github/copilot-instructions.md](.github/copilot-instructions.md) permanece correta para [specs/001-carteiras-transacoes/plan.md](specs/001-carteiras-transacoes/plan.md).
 
 ## Complexity Tracking
 
-Sem violações à constitution que exijam justificação. Todas as decisões técnicas estão alinhadas aos 5 princípios e à baseline aprovada.
+Nenhuma violação ativa de constitution exige exceção nesta fase.
