@@ -101,12 +101,12 @@
 
 ### Tests for User Story 2
 
-- [ ] T046 [P] [US2] Criar teste unitario das regras de limite de carteiras e estados ativo-inativo em tests/unit/wallets/walletRules.test.ts
-- [ ] T047 [P] [US2] Criar teste unitario do recalc apos hard-delete de conta e cartao em tests/unit/accounts-cards/hardDeleteRecalculation.test.ts
-- [ ] T048 [P] [US2] Criar teste unitario das regras de estorno parcial e total em tests/unit/cards/refundRules.test.ts
-- [ ] T049 [P] [US2] Criar teste de integracao obrigatorio da validacao de AccountForm e CardForm com bloqueio de envio invalido em tests/integration/accounts-cards/formsValidation.test.tsx
-- [ ] T050 [P] [US2] Criar teste de integracao obrigatorio dos estados loading-empty-error das listagens de contas e cartoes em tests/integration/accounts-cards/listStates.test.tsx
-- [ ] T051 [P] [US2] Criar teste de integracao do CRUD e arquivamento de contas-cartoes incluindo FR-003A (tela de cartao lista despesas e creditos vinculados) em tests/integration/accounts-cards/lifecycleFlow.test.tsx
+- [x] T046 [P] [US2] Criar teste unitario das regras de limite de carteiras e estados ativo-inativo em tests/unit/wallets/walletRules.test.ts
+- [x] T047 [P] [US2] Criar teste unitario do recalc apos hard-delete de conta e cartao em tests/unit/accounts-cards/hardDeleteRecalculation.test.ts
+- [x] T048 [P] [US2] Criar teste unitario das regras de estorno parcial e total em tests/unit/cards/refundRules.test.ts
+- [x] T049 [P] [US2] Criar teste de integracao obrigatorio da validacao de AccountForm e CardForm com bloqueio de envio invalido em tests/integration/accounts-cards/formsValidation.test.tsx
+- [x] T050 [P] [US2] Criar teste de integracao obrigatorio dos estados loading-empty-error das listagens de contas e cartoes em tests/integration/accounts-cards/listStates.test.tsx
+- [x] T051 [P] [US2] Criar teste de integracao do CRUD e arquivamento de contas-cartoes incluindo FR-003A (tela de cartao lista despesas e creditos vinculados) em tests/integration/accounts-cards/lifecycleFlow.test.tsx
 - [ ] T052 [P] [US2] Criar teste de integracao do bloqueio de exclusao de conta com cartao vinculado em tests/integration/accounts-cards/accountDeleteGuard.test.tsx
 - [ ] T053 [P] [US2] Criar teste de integracao da orientacao de troca ou desvinculacao antes da exclusao em tests/integration/accounts-cards/accountDeleteGuidance.test.tsx
 - [ ] T054 [P] [US2] Criar teste de integracao de acessibilidade da jornada de contas e cartoes incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us2-accounts-cards.a11y.test.tsx
