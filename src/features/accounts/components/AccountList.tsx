@@ -15,7 +15,7 @@ export function AccountList({
     return (
       <section aria-label="Listagem de contas">
         <h3>Contas</h3>
-        <p>Carregando contas...</p>
+        <p role="status" aria-live="polite">Carregando contas...</p>
       </section>
     );
   }
@@ -25,6 +25,7 @@ export function AccountList({
       <section aria-label="Listagem de contas">
         <h3>Contas</h3>
         <p role="alert">Nao foi possivel carregar as contas.</p>
+        <p>{error}</p>
       </section>
     );
   }
@@ -33,7 +34,7 @@ export function AccountList({
     return (
       <section aria-label="Listagem de contas">
         <h3>Contas</h3>
-        <p>Nenhuma conta cadastrada para esta carteira.</p>
+        <p role="status">Nenhuma conta cadastrada para esta carteira.</p>
       </section>
     );
   }

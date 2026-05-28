@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Account, Card, Transaction } from '@/features/shared/types/domain';
+import type { Account, Card } from '@/features/shared/types/domain';
 import {
   __resetAccountService,
   createWalletAccount,
@@ -18,9 +18,9 @@ import {
   updateWalletCard,
   archiveWalletCard,
 } from '@/features/cards/cardService';
+import * as cardDetailService from '@/features/cards/cardDetailService';
 import { listCardLinkedRecords, type CardLinkedRecord } from '@/features/cards/cardDetailService';
 import { CardDetailRecords } from '@/features/cards/components/CardDetailRecords';
-import * as transactionService from '@/features/transactions/transactionService';
 
 const WALLET_ID = 'wallet-001';
 
@@ -213,24 +213,6 @@ function LifecycleFlowHarness({ walletId }: LifecycleFlowHarnessProps) {
   );
 }
 
-function createTransaction(partial: Partial<Transaction>): Transaction {
-  return {
-    id: partial.id ?? 'tx-1',
-    walletId: partial.walletId ?? WALLET_ID,
-    type: partial.type ?? 'income',
-    status: partial.status ?? 'effective',
-    amount: partial.amount ?? '0.00',
-    date: partial.date ?? '2026-05-28T00:00:00.000Z',
-    period: partial.period ?? null,
-    sourceAccountId: partial.sourceAccountId ?? null,
-    destinationAccountId: partial.destinationAccountId ?? null,
-    cardId: partial.cardId ?? null,
-    cardExpensePaymentStatus: partial.cardExpensePaymentStatus ?? null,
-    paidFromAccountId: partial.paidFromAccountId ?? null,
-    paidAt: partial.paidAt ?? null,
-  };
-}
-
 describe('accounts-cards lifecycle flow', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -260,10 +242,23 @@ describe('accounts-cards lifecycle flow', () => {
     await user.click(screen.getByRole('button', { name: 'Arquivar cartao' }));
     expect(await screen.findByText('Cartao Mercado Editado - inactive')).toBeInTheDocument();
 
-    vi.spyOn(transactionService, 'listWalletTransactions').mockResolvedValueOnce([
-      createTransaction({ id: 'tx-expense', type: 'expense', amount: '230.00', cardId: 'card-1' }),
-      createTransaction({ id: 'tx-credit', type: 'income', amount: '50.00', cardId: 'card-1' }),
-      createTransaction({ id: 'tx-unlinked', type: 'expense', amount: '999.00', cardId: 'card-2' }),
+    vi.spyOn(cardDetailService, 'listCardLinkedRecords').mockResolvedValueOnce([
+      {
+        id: 'tx-expense',
+        cardId: 'card-1',
+        type: 'expense',
+        amount: '230.00',
+        occurredAt: '2026-05-28T00:00:00.000Z',
+        originalTransactionId: 'tx-expense',
+      },
+      {
+        id: 'tx-credit',
+        cardId: 'card-1',
+        type: 'credit',
+        amount: '50.00',
+        occurredAt: '2026-05-29T00:00:00.000Z',
+        originalTransactionId: 'tx-credit',
+      },
     ]);
 
     await user.click(screen.getByRole('button', { name: 'Carregar detalhe do cartao' }));

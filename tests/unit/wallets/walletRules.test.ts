@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Account, Card, Wallet } from '@/features/shared/types/domain';
 import {
   MAX_WALLETS_PER_USER,
@@ -6,11 +6,12 @@ import {
   archiveOperationalRecord,
   canCreateWallet,
   canUseOperationalRecordInNewTransactions,
+  createWallet,
   enforceWalletCreationLimit,
   reactivateOperationalRecord,
 } from '@/features/wallets/walletService';
 
-function createWallet(partial: Partial<Wallet>): Wallet {
+function buildWallet(partial: Partial<Wallet>): Wallet {
   return {
     id: partial.id ?? 'wallet-1',
     ownerId: partial.ownerId ?? 'user-1',
@@ -23,8 +24,12 @@ function createWallet(partial: Partial<Wallet>): Wallet {
 }
 
 describe('wallet rules', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('allows creation when user has fewer than 2 wallets', () => {
-    const existingWallets = [createWallet({ id: 'wallet-1', ownerId: 'user-1' })];
+    const existingWallets = [buildWallet({ id: 'wallet-1', ownerId: 'user-1' })];
 
     expect(canCreateWallet(existingWallets, 'user-1')).toBe(true);
     expect(() => enforceWalletCreationLimit(existingWallets, 'user-1')).not.toThrow();
@@ -32,9 +37,9 @@ describe('wallet rules', () => {
 
   it('blocks creation when user reaches the maximum of 2 wallets', () => {
     const existingWallets = [
-      createWallet({ id: 'wallet-1', ownerId: 'user-1' }),
-      createWallet({ id: 'wallet-2', ownerId: 'user-1' }),
-      createWallet({ id: 'wallet-3', ownerId: 'other-user' }),
+      buildWallet({ id: 'wallet-1', ownerId: 'user-1' }),
+      buildWallet({ id: 'wallet-2', ownerId: 'user-1' }),
+      buildWallet({ id: 'wallet-3', ownerId: 'other-user' }),
     ];
 
     expect(MAX_WALLETS_PER_USER).toBe(2);
@@ -74,5 +79,33 @@ describe('wallet rules', () => {
     expect(reactivatedCard.status).toBe('active');
     expect(canUseOperationalRecordInNewTransactions(reactivatedAccount.status)).toBe(true);
     expect(canUseOperationalRecordInNewTransactions(reactivatedCard.status)).toBe(true);
+  });
+
+  it('blocks wallet creation request when user already has 2 wallets', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(
+        JSON.stringify([
+          buildWallet({ id: 'wallet-1', ownerId: 'user-1' }),
+          buildWallet({ id: 'wallet-2', ownerId: 'user-1' }),
+        ]),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    await expect(
+      createWallet({
+        ownerId: 'user-1',
+        name: 'Carteira Extra',
+        timezone: 'UTC',
+      }),
+    ).rejects.toThrowError(WalletRuleError);
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(globalThis.fetch).toHaveBeenCalledWith('/wallets', expect.anything());
   });
 });

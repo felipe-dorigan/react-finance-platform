@@ -96,24 +96,6 @@ Observacao: algumas rotas ainda estão em modo placeholder enquanto as próximas
 - [src/schemas](src/schemas): schemas de validacao
 - [tests](tests): testes unitarios e de integracao
 
-## Atualizacoes recentes (2026-05-28)
-
-Progresso iniciado da Phase 4 (US2 - contas e cartoes), com tarefas de teste e base de servicos ja implementadas:
-
-- T046-T051 concluidas em [specs/001-carteiras-transacoes/tasks.md](specs/001-carteiras-transacoes/tasks.md)
-- regras de limite de carteiras e estado ativo-inativo em [src/features/wallets/walletService.ts](src/features/wallets/walletService.ts)
-- recalc apos hard-delete em [src/features/transactions/hardDeleteRecalculation.ts](src/features/transactions/hardDeleteRecalculation.ts)
-- regras de estorno parcial-total em [src/features/cards/refundRules.ts](src/features/cards/refundRules.ts)
-- componentes iniciais de contas e cartoes em [src/features/accounts/components](src/features/accounts/components) e [src/features/cards/components](src/features/cards/components)
-- servicos iniciais de contas e cartoes em [src/features/accounts/accountService.ts](src/features/accounts/accountService.ts), [src/features/cards/cardService.ts](src/features/cards/cardService.ts) e [src/features/cards/cardDetailService.ts](src/features/cards/cardDetailService.ts)
-- cobertura inicial de integracao US2 em [tests/integration/accounts-cards](tests/integration/accounts-cards)
-
-Teste agregado validado para esse lote:
-
-```bash
-npm run test -- tests/unit/wallets/walletRules.test.ts tests/unit/accounts-cards/hardDeleteRecalculation.test.ts tests/unit/cards/refundRules.test.ts tests/integration/accounts-cards/formsValidation.test.tsx tests/integration/accounts-cards/listStates.test.tsx tests/integration/accounts-cards/lifecycleFlow.test.tsx
-```
-
 ## Fluxo recomendado de desenvolvimento
 
 1. Iniciar com npm run dev

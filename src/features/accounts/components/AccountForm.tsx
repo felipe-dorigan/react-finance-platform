@@ -8,6 +8,7 @@ const accountFormSchema = z.object({
     .string()
     .trim()
     .min(1, 'Informe um saldo inicial para a conta.')
+    .refine((value) => /^\d+(\.\d{1,2})?$/.test(value), 'Informe um saldo inicial valido.')
     .refine((value) => Number(value) >= 0, 'Informe um saldo inicial valido.'),
   status: z.enum(['active', 'inactive']),
 });
@@ -39,12 +40,34 @@ export function AccountForm({ onSubmit }: AccountFormProps) {
   return (
     <form onSubmit={submit} aria-label="Formulario de conta" noValidate>
       <label htmlFor="account-name">Nome da conta</label>
-      <input id="account-name" type="text" {...register('name')} />
-      {errors.name ? <p role="alert">{errors.name.message}</p> : null}
+      <input
+        id="account-name"
+        type="text"
+        aria-invalid={errors.name ? 'true' : 'false'}
+        aria-describedby={errors.name ? 'account-name-error' : undefined}
+        {...register('name')}
+      />
+      {errors.name ? (
+        <p id="account-name-error" role="alert" aria-live="polite">
+          {errors.name.message}
+        </p>
+      ) : null}
 
       <label htmlFor="account-balance">Saldo inicial</label>
-      <input id="account-balance" type="number" step="0.01" min="0" {...register('balance')} />
-      {errors.balance ? <p role="alert">{errors.balance.message}</p> : null}
+      <input
+        id="account-balance"
+        type="number"
+        step="0.01"
+        min="0"
+        aria-invalid={errors.balance ? 'true' : 'false'}
+        aria-describedby={errors.balance ? 'account-balance-error' : undefined}
+        {...register('balance')}
+      />
+      {errors.balance ? (
+        <p id="account-balance-error" role="alert" aria-live="polite">
+          {errors.balance.message}
+        </p>
+      ) : null}
 
       <label htmlFor="account-status">Status</label>
       <select id="account-status" {...register('status')}>

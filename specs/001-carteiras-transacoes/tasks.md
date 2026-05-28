@@ -107,24 +107,24 @@
 - [x] T049 [P] [US2] Criar teste de integracao obrigatorio da validacao de AccountForm e CardForm com bloqueio de envio invalido em tests/integration/accounts-cards/formsValidation.test.tsx
 - [x] T050 [P] [US2] Criar teste de integracao obrigatorio dos estados loading-empty-error das listagens de contas e cartoes em tests/integration/accounts-cards/listStates.test.tsx
 - [x] T051 [P] [US2] Criar teste de integracao do CRUD e arquivamento de contas-cartoes incluindo FR-003A (tela de cartao lista despesas e creditos vinculados) em tests/integration/accounts-cards/lifecycleFlow.test.tsx
-- [ ] T052 [P] [US2] Criar teste de integracao do bloqueio de exclusao de conta com cartao vinculado em tests/integration/accounts-cards/accountDeleteGuard.test.tsx
-- [ ] T053 [P] [US2] Criar teste de integracao da orientacao de troca ou desvinculacao antes da exclusao em tests/integration/accounts-cards/accountDeleteGuidance.test.tsx
-- [ ] T054 [P] [US2] Criar teste de integracao de acessibilidade da jornada de contas e cartoes incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us2-accounts-cards.a11y.test.tsx
-- [ ] T055 [P] [US2] Criar teste de integracao de telemetria e ErrorSignal em mutacoes criticas, falhas de carregamento e bloqueios de exclusao de contas-cartoes em tests/integration/observability/us2-accounts-cards-observability.test.tsx
+- [x] T052 [P] [US2] Criar teste de integracao do bloqueio de exclusao de conta com cartao vinculado em tests/integration/accounts-cards/accountDeleteGuard.test.tsx
+- [x] T053 [P] [US2] Criar teste de integracao da orientacao de troca ou desvinculacao antes da exclusao em tests/integration/accounts-cards/accountDeleteGuidance.test.tsx
+- [x] T054 [P] [US2] Criar teste de integracao de acessibilidade da jornada de contas e cartoes incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us2-accounts-cards.a11y.test.tsx
+- [x] T055 [P] [US2] Criar teste de integracao de telemetria e ErrorSignal em mutacoes criticas, falhas de carregamento e bloqueios de exclusao de contas-cartoes em tests/integration/observability/us2-accounts-cards-observability.test.tsx
 
 ### Implementation for User Story 2
 
-- [ ] T057 [P] [US2] Implementar o servico de carteiras com limite maximo de duas por usuario em src/features/wallets/walletService.ts
-- [ ] T058 [P] [US2] Implementar o servico de contas com arquivar, reativar e bloqueios de exclusao em src/features/accounts/accountService.ts
-- [ ] T059 [P] [US2] Implementar o servico de cartoes com vinculo e troca de conta de debito com instrumentacao de latencia para FR-030A-SC-009 em src/features/cards/cardService.ts
-- [ ] T060 [P] [US2] Implementar endpoint-view de detalhe do cartao com registros vinculados para FR-003A em src/features/cards/cardDetailService.ts e src/features/cards/components/CardDetailRecords.tsx
-- [ ] T061 [US2] Implementar o fluxo de hard-delete e recalc da carteira atual em src/features/accounts/accountHardDeleteService.ts e src/features/cards/cardHardDeleteService.ts
-- [ ] T062 [US2] Implementar validacao explicita e mensagens por campo no AccountForm e CardForm em src/features/accounts/components/AccountForm.tsx e src/features/cards/components/CardForm.tsx
-- [ ] T063 [US2] Implementar estados loading-empty-error e feedback de erro visivel nas listagens AccountList e CardList em src/features/accounts/components/AccountList.tsx e src/features/cards/components/CardList.tsx
-- [ ] T064 [US2] Implementar o fluxo de estorno parcial e total em src/features/cards/refundService.ts e src/features/cards/components/RefundForm.tsx
-- [ ] T065 [US2] Integrar auditoria das operacoes de conta e cartao em src/features/accounts/accountsAuditBridge.ts e src/features/cards/cardsAuditBridge.ts
-- [ ] T066 [US2] Implementar ajustes de acessibilidade da jornada de contas e cartoes em src/features/accounts/components/AccountForm.tsx, src/features/accounts/components/AccountList.tsx, src/features/cards/components/CardForm.tsx e src/features/cards/components/CardList.tsx
-- [ ] T067 [US2] Instrumentar TelemetryEvent e ErrorSignal em mutacoes criticas, falhas de carregamento e bloqueios de contas-cartoes com erro visivel ao usuario em src/features/accounts/accountsObservability.ts e src/features/cards/cardsObservability.ts
+- [x] T057 [P] [US2] Implementar o servico de carteiras com limite maximo de duas por usuario em src/features/wallets/walletService.ts
+- [x] T058 [P] [US2] Implementar o servico de contas com arquivar, reativar e bloqueios de exclusao em src/features/accounts/accountService.ts
+- [x] T059 [P] [US2] Implementar o servico de cartoes com vinculo e troca de conta de debito com instrumentacao de latencia para FR-030A-SC-009 em src/features/cards/cardService.ts
+- [x] T060 [P] [US2] Implementar endpoint-view de detalhe do cartao com registros vinculados para FR-003A em src/features/cards/cardDetailService.ts e src/features/cards/components/CardDetailRecords.tsx
+- [x] T061 [US2] Implementar o fluxo de hard-delete e recalc da carteira atual em src/features/accounts/accountHardDeleteService.ts e src/features/cards/cardHardDeleteService.ts
+- [x] T062 [US2] Implementar validacao explicita e mensagens por campo no AccountForm e CardForm em src/features/accounts/components/AccountForm.tsx e src/features/cards/components/CardForm.tsx
+- [x] T063 [US2] Implementar estados loading-empty-error e feedback de erro visivel nas listagens AccountList e CardList em src/features/accounts/components/AccountList.tsx e src/features/cards/components/CardList.tsx
+- [x] T064 [US2] Implementar o fluxo de estorno parcial e total em src/features/cards/refundService.ts e src/features/cards/components/RefundForm.tsx
+- [x] T065 [US2] Integrar auditoria das operacoes de conta e cartao em src/features/accounts/accountsAuditBridge.ts e src/features/cards/cardsAuditBridge.ts
+- [x] T066 [US2] Implementar ajustes de acessibilidade da jornada de contas e cartoes em src/features/accounts/components/AccountForm.tsx, src/features/accounts/components/AccountList.tsx, src/features/cards/components/CardForm.tsx e src/features/cards/components/CardList.tsx
+- [x] T067 [US2] Instrumentar TelemetryEvent e ErrorSignal em mutacoes criticas, falhas de carregamento e bloqueios de contas-cartoes com erro visivel ao usuario em src/features/accounts/accountsObservability.ts e src/features/cards/cardsObservability.ts
 
 **Checkpoint**: US2 pronta e validavel de forma independente.
 

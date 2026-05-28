@@ -2,6 +2,8 @@ import type { CardLinkedRecord } from '@/features/cards/cardDetailService';
 
 type CardDetailRecordsProps = {
   records: CardLinkedRecord[];
+  isLoading?: boolean;
+  error?: string | null;
 };
 
 function getRecordTypeLabel(type: CardLinkedRecord['type']): string {
@@ -12,9 +14,36 @@ function getRecordTypeLabel(type: CardLinkedRecord['type']): string {
   return 'Credito';
 }
 
-export function CardDetailRecords({ records }: CardDetailRecordsProps) {
+export function CardDetailRecords({
+  records,
+  isLoading = false,
+  error = null,
+}: CardDetailRecordsProps) {
+  if (isLoading) {
+    return (
+      <section aria-label="Detalhe do cartao">
+        <h2>Registros vinculados</h2>
+        <p>Carregando registros vinculados...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section aria-label="Detalhe do cartao">
+        <h2>Registros vinculados</h2>
+        <p role="alert">Nao foi possivel carregar os registros vinculados.</p>
+      </section>
+    );
+  }
+
   if (records.length === 0) {
-    return <p>Nenhum registro vinculado encontrado para este cartao.</p>;
+    return (
+      <section aria-label="Detalhe do cartao">
+        <h2>Registros vinculados</h2>
+        <p>Nenhum registro vinculado encontrado para este cartao.</p>
+      </section>
+    );
   }
 
   return (
@@ -26,6 +55,8 @@ export function CardDetailRecords({ records }: CardDetailRecordsProps) {
             <span>{getRecordTypeLabel(record.type)}</span>
             {' - '}
             <span>R$ {record.amount}</span>
+            {' - '}
+            <time dateTime={record.occurredAt}>{record.occurredAt}</time>
           </li>
         ))}
       </ul>

@@ -15,7 +15,7 @@ export function CardList({
     return (
       <section aria-label="Listagem de cartoes">
         <h3>Cartoes</h3>
-        <p>Carregando cartoes...</p>
+        <p role="status" aria-live="polite">Carregando cartoes...</p>
       </section>
     );
   }
@@ -25,6 +25,7 @@ export function CardList({
       <section aria-label="Listagem de cartoes">
         <h3>Cartoes</h3>
         <p role="alert">Nao foi possivel carregar os cartoes.</p>
+        <p>{error}</p>
       </section>
     );
   }
@@ -33,7 +34,7 @@ export function CardList({
     return (
       <section aria-label="Listagem de cartoes">
         <h3>Cartoes</h3>
-        <p>Nenhum cartao cadastrado para esta carteira.</p>
+        <p role="status">Nenhum cartao cadastrado para esta carteira.</p>
       </section>
     );
   }

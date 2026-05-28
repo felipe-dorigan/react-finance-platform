@@ -1,4 +1,5 @@
 import type { Account } from '@/features/shared/types/domain';
+import { listWalletCards } from '@/features/cards/cardService';
 
 export type CreateAccountInput = {
   name: string;
@@ -9,6 +10,26 @@ export type UpdateAccountInput = {
   name?: string;
   balance?: string;
 };
+
+export class AccountDeleteBlockedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AccountDeleteBlockedError';
+  }
+}
+
+export class AccountDeleteBlockedByLinkedCardError extends AccountDeleteBlockedError {
+  readonly code = 'ACCOUNT_DELETE_BLOCKED_BY_LINKED_CARD';
+  readonly guidance =
+    'Antes de excluir, troque a conta de debito do cartao para outra conta ativa ou desvincule o cartao.';
+  readonly linkedCardIds: string[];
+
+  constructor(linkedCardIds: string[]) {
+    super('Conta possui cartao vinculado ativo e nao pode ser excluida.');
+    this.name = 'AccountDeleteBlockedByLinkedCardError';
+    this.linkedCardIds = [...linkedCardIds];
+  }
+}
 
 let accountSequence = 0;
 let accountStore: Account[] = [];
@@ -97,4 +118,54 @@ export async function archiveWalletAccount(
   ];
 
   return archivedAccount;
+}
+
+export async function reactivateWalletAccount(
+  walletId: string,
+  accountId: string,
+): Promise<Account> {
+  const index = accountStore.findIndex(
+    (account) => account.id === accountId && account.walletId === walletId,
+  );
+
+  if (index === -1) {
+    throw new Error('Conta nao encontrada para reativacao.');
+  }
+
+  const reactivatedAccount: Account = {
+    ...accountStore[index],
+    status: 'active',
+  };
+
+  accountStore = [
+    ...accountStore.slice(0, index),
+    reactivatedAccount,
+    ...accountStore.slice(index + 1),
+  ];
+
+  return reactivatedAccount;
+}
+
+export async function deleteWalletAccount(
+  walletId: string,
+  accountId: string,
+): Promise<void> {
+  const cards = await listWalletCards(walletId);
+  const linkedActiveCards = cards.filter(
+    (card) => card.debitAccountId === accountId && card.status === 'active',
+  );
+
+  if (linkedActiveCards.length > 0) {
+    throw new AccountDeleteBlockedByLinkedCardError(linkedActiveCards.map((card) => card.id));
+  }
+
+  const index = accountStore.findIndex(
+    (account) => account.id === accountId && account.walletId === walletId,
+  );
+
+  if (index === -1) {
+    throw new Error('Conta nao encontrada para exclusao.');
+  }
+
+  accountStore = [...accountStore.slice(0, index), ...accountStore.slice(index + 1)];
 }
