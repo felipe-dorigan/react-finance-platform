@@ -5,6 +5,7 @@ import {
   createCardLinkedRecordRequestSchema,
   createTransactionRequestSchema,
   payExpenseRequestSchema,
+  transactionSchema,
   updateTransactionRequestSchema,
 } from '@/schemas/transactionSchemas';
 import { upsertPermissionRequestSchema } from '@/schemas/walletSchemas';
@@ -44,7 +45,21 @@ type PermissionFixture = {
   roleLabel: string;
 };
 
-type TransactionFixture = Record<string, never>;
+type TransactionFixture = {
+  id: string;
+  walletId: string;
+  type: 'income' | 'expense' | 'transfer';
+  status: 'effective' | 'pending';
+  amount: string;
+  date: string;
+  period: 'daily' | 'weekly' | 'monthly' | 'yearly' | null;
+  sourceAccountId: string | null;
+  destinationAccountId: string | null;
+  cardId: string | null;
+  cardExpensePaymentStatus: 'unpaid' | 'paid' | null;
+  paidFromAccountId: string | null;
+  paidAt: string | null;
+};
 
 const data = fixtures as {
   wallets: WalletFixture[];
@@ -63,7 +78,16 @@ function getWallet(walletId: string) {
   return data.wallets.find((wallet) => wallet.id === walletId) ?? null;
 }
 
+let transactionSequence = data.transactions.length;
+
 export const handlers = [
+  http.get('/wallets/:walletId', ({ params }) => {
+    const wallet = getWallet(String(params.walletId));
+    if (!wallet) {
+      return jsonOk({ message: 'Not found' }, 404);
+    }
+    return jsonOk(wallet);
+  }),
   http.get('/wallets/:walletId/accounts', ({ params }) => {
     return jsonOk(data.accounts.filter((account) => account.walletId === params.walletId));
   }),
@@ -80,10 +104,12 @@ export const handlers = [
     return jsonOk({ card, linkedRecords: [] });
   }),
   http.get('/wallets/:walletId/transactions', ({ params }) => {
-    return jsonOk(data.transactions.filter((transaction) => transaction.walletId === params.walletId));
+    const walletId = String(params.walletId);
+    return jsonOk(data.transactions.filter((transaction) => transaction.walletId === walletId));
   }),
   http.get('/wallets/:walletId/expenses', ({ params }) => {
-    return jsonOk(data.transactions.filter((transaction) => transaction.walletId === params.walletId));
+    const walletId = String(params.walletId);
+    return jsonOk(data.transactions.filter((transaction) => transaction.walletId === walletId && transaction.type === 'expense'));
   }),
   http.get('/wallets/:walletId/permissions', ({ params }) => {
     return jsonOk(data.permissions.filter((permission) => permission.walletId === params.walletId));
@@ -136,11 +162,51 @@ export const handlers = [
   }),
   http.post('/wallets/:walletId/transactions', async ({ request, params }) => {
     const payload = createTransactionRequestSchema.parse(await request.json());
-    return jsonOk({ id: `tx-${Date.now()}`, walletId: String(params.walletId), ...payload }, 201);
+    transactionSequence += 1;
+
+    const nextTransaction = transactionSchema.parse({
+      id: `tx-${transactionSequence}`,
+      walletId: String(params.walletId),
+      type: payload.type,
+      status: payload.status,
+      amount: payload.amount,
+      date: payload.date,
+      period: payload.period ?? null,
+      sourceAccountId: payload.sourceAccountId ?? null,
+      destinationAccountId: payload.destinationAccountId ?? null,
+      cardId: payload.cardId ?? null,
+      cardExpensePaymentStatus: null,
+      paidFromAccountId: null,
+      paidAt: null,
+    });
+
+    data.transactions.push(nextTransaction);
+    return jsonOk(nextTransaction, 201);
   }),
   http.patch('/wallets/:walletId/transactions/:transactionId', async ({ request, params }) => {
     const payload = updateTransactionRequestSchema.parse(await request.json());
-    return jsonOk({ id: String(params.transactionId), walletId: String(params.walletId), ...payload });
+    const walletId = String(params.walletId);
+    const transactionId = String(params.transactionId);
+    const currentTransactionIndex = data.transactions.findIndex(
+      (transaction) => transaction.walletId === walletId && transaction.id === transactionId,
+    );
+
+    if (currentTransactionIndex === -1) {
+      return jsonOk({ message: 'Not found' }, 404);
+    }
+
+    const current = data.transactions[currentTransactionIndex];
+    const updatedTransaction = transactionSchema.parse({
+      ...current,
+      ...payload,
+      period: payload.period ?? current.period,
+      sourceAccountId: payload.sourceAccountId ?? current.sourceAccountId,
+      destinationAccountId: payload.destinationAccountId ?? current.destinationAccountId,
+      cardId: payload.cardId ?? current.cardId,
+    });
+
+    data.transactions[currentTransactionIndex] = updatedTransaction;
+    return jsonOk(updatedTransaction);
   }),
   http.post('/telemetry/events', async () => jsonOk({}, 202)),
   http.post('/error-signals', async () => jsonOk({}, 202)),

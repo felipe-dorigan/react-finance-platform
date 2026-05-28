@@ -57,35 +57,35 @@
 
 ### Tests for User Story 1
 
-- [ ] T019 [P] [US1] Criar teste unitario das regras de saldo principal e saldo projetado em tests/unit/transactions/balanceProjection.test.ts
-- [ ] T020 [P] [US1] Criar teste unitario das regras de transferencia sem recorrencia e da regra FR-004A (cartao nao pode ser origem-destino financeiro) em tests/unit/transactions/transferRules.test.ts
-- [ ] T021 [P] [US1] Criar teste de integracao da renderizacao da tela de dashboard e estados loading-empty-error em tests/integration/transactions/dashboardStates.test.tsx
-- [ ] T022 [P] [US1] Criar teste de integracao da validacao do formulario de transacao e do bloqueio de envio invalido em tests/integration/transactions/transactionFormValidation.test.tsx
-- [ ] T023 [P] [US1] Criar teste de integracao do fluxo feliz de criacao de entrada e saida com feedback visual em tests/integration/transactions/transactionHappyPath.test.tsx
-- [ ] T024 [P] [US1] Criar teste de integracao da regra visual de transferencia e limpeza do campo period em tests/integration/transactions/transferPeriodVisibility.test.tsx
-- [ ] T025 [P] [US1] Criar teste de integracao da regressao de calculo exibido no resumo e na lista em tests/integration/transactions/walletSummaryRecalculation.test.tsx
+- [x] T019 [P] [US1] Criar teste unitario das regras de saldo principal e saldo projetado em tests/unit/transactions/balanceProjection.test.ts
+- [x] T020 [P] [US1] Criar teste unitario das regras de transferencia sem recorrencia e da regra FR-004A (cartao nao pode ser origem-destino financeiro) em tests/unit/transactions/transferRules.test.ts
+- [x] T021 [P] [US1] Criar teste de integracao da renderizacao da tela de dashboard e estados loading-empty-error em tests/integration/transactions/dashboardStates.test.tsx
+- [x] T022 [P] [US1] Criar teste de integracao da validacao do formulario de transacao e do bloqueio de envio invalido em tests/integration/transactions/transactionFormValidation.test.tsx
+- [x] T023 [P] [US1] Criar teste de integracao do fluxo feliz de criacao de entrada e saida com feedback visual em tests/integration/transactions/transactionHappyPath.test.tsx
+- [x] T024 [P] [US1] Criar teste de integracao da regra visual de transferencia e limpeza do campo period em tests/integration/transactions/transferPeriodVisibility.test.tsx
+- [x] T025 [P] [US1] Criar teste de integracao da regressao de calculo exibido no resumo e na lista em tests/integration/transactions/walletSummaryRecalculation.test.tsx
 - [ ] T026 [P] [US1] Criar teste de integracao de acessibilidade da jornada de transacoes incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us1-transactions.a11y.test.tsx
 - [ ] T027 [P] [US1] Criar teste de integracao de telemetria e ErrorSignal em mutacoes criticas e falhas de carregamento de transacoes com erro visivel ao usuario em tests/integration/observability/us1-transactions-observability.test.tsx
 - [ ] T038 [P] [US1] Criar teste de integracao da listagem de despesas com despesas de cartao e filtro por cartao em tests/integration/expenses/expenseListWithCardFilter.test.tsx
 - [ ] T039 [P] [US1] Criar teste de integracao da acao de pagar despesa com debito em conta e atualizacao de status no historico em tests/integration/expenses/payCardExpenseFlow.test.tsx
-- [ ] T040 [P] [US1] Criar teste unitario do detector de duplicidade com janela de 5 minutos para criacao e edicao em tests/unit/transactions/duplicateDetectionWindow.test.ts
+- [x] T040 [P] [US1] Criar teste unitario do detector de duplicidade com janela de 5 minutos para criacao e edicao em tests/unit/transactions/duplicateDetectionWindow.test.ts
 - [ ] T041 [P] [US1] Criar teste de integracao do tratamento de resposta 409 com confirmacao explicita antes de persistir em tests/integration/transactions/duplicateConfirmationFlow.test.tsx
 - [ ] T096 [P] [US1] Criar teste de integracao do uso de timezone IANA da carteira nos calculos de periodo/recorrencia com persistencia UTC de timestamps em tests/integration/transactions/walletTimezoneRenderingAndPersistence.test.tsx
 
 ### Implementation for User Story 1
 
-- [ ] T029 [P] [US1] Implementar o servico de transacoes com regras de status, recorrencia, transferencia e enforcement explicito de FR-004A em src/features/transactions/transactionService.ts
-- [ ] T030 [P] [US1] Implementar a projecao de saldo da carteira e agregados por periodo em src/features/transactions/walletProjection.ts
-- [ ] T031 [US1] Implementar a pagina de dashboard da carteira em src/features/transactions/pages/WalletDashboardPage.tsx
-- [ ] T032 [US1] Implementar o formulario de transacao com React Hook Form e Zod em src/features/transactions/components/TransactionForm.tsx
-- [ ] T033 [US1] Implementar a lista de transacoes com filtros de periodo e status em src/features/transactions/components/TransactionList.tsx
-- [ ] T034 [US1] Implementar o resumo consolidado com saldo principal, saldo projetado e totais em src/features/transactions/components/WalletSummaryCard.tsx
+- [x] T029 [P] [US1] Implementar o servico de transacoes com regras de status, recorrencia, transferencia e enforcement explicito de FR-004A em src/features/transactions/transactionService.ts
+- [x] T030 [P] [US1] Implementar a projecao de saldo da carteira e agregados por periodo em src/features/transactions/walletProjection.ts
+- [x] T031 [US1] Implementar a pagina de dashboard da carteira em src/features/transactions/pages/WalletDashboardPage.tsx
+- [x] T032 [US1] Implementar o formulario de transacao com React Hook Form e Zod em src/features/transactions/components/TransactionForm.tsx
+- [x] T033 [US1] Implementar a lista de transacoes com filtros de periodo e status em src/features/transactions/components/TransactionList.tsx
+- [x] T034 [US1] Implementar o resumo consolidado com saldo principal, saldo projetado e totais em src/features/transactions/components/WalletSummaryCard.tsx
 - [ ] T035 [US1] Integrar auditoria e emissao de journal nas mutacoes de transacao em src/features/transactions/transactionAuditBridge.ts
 - [ ] T036 [US1] Implementar ajustes de acessibilidade da jornada de transacoes em src/features/transactions/components/TransactionForm.tsx e src/features/transactions/pages/WalletDashboardPage.tsx
 - [ ] T037 [US1] Instrumentar TelemetryEvent e ErrorSignal nas mutacoes criticas e falhas de carregamento de transacoes com estado de erro visivel ao usuario em src/features/transactions/transactionObservability.ts e src/features/transactions/pages/WalletDashboardPage.tsx
 - [ ] T042 [P] [US1] Implementar servico de despesas para listagem geral, filtro por cartao e pagamento com debito em conta em src/features/expenses/expenseService.ts
 - [ ] T043 [US1] Implementar UI da listagem de despesas com filtro por cartao e acao pagar despesa em src/features/expenses/components/ExpenseList.tsx e src/features/expenses/components/PayExpenseAction.tsx
-- [ ] T044 [P] [US1] Implementar detector de duplicidade com janela de 5 minutos e fingerprint por valor-data-tipo-vinculo em src/features/transactions/duplicateDetectionService.ts
+- [x] T044 [P] [US1] Implementar detector de duplicidade com janela de 5 minutos e fingerprint por valor-data-tipo-vinculo em src/features/transactions/duplicateDetectionService.ts
 - [ ] T045 [US1] Implementar tratamento de 409 na UI com fluxo de confirmacao explicita antes de persistir em src/features/transactions/components/TransactionForm.tsx e src/features/transactions/hooks/useDuplicateConfirmation.ts
 - [ ] T097 [US1] Integrar timezone IANA da carteira no calculo de periodo/recorrencia e garantir serializacao persistida em UTC nas mutacoes em src/features/transactions/transactionService.ts e src/features/transactions/components/TransactionForm.tsx
 

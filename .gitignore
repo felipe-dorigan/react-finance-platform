@@ -26,6 +26,9 @@ test-results/
 # OS/editor files
 .DS_Store
 Thumbs.db
+.idea/
+*.tmp
+*.swp
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json

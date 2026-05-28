@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, useRouteError } from 'react-router-dom';
 import { AppShell } from '@/app/layout/AppShell';
 import { WalletGuard, AuthGuard } from './guards';
+import { WalletDashboardPage } from '@/features/transactions/pages/WalletDashboardPage';
 
 function PlaceholderPage({ title, description }: { title: string; description: string }) {
   return (
@@ -40,7 +41,7 @@ export const router = createBrowserRouter([
         path: 'wallets/:walletId/dashboard',
         element: (
           <WalletGuard requiredRole="read">
-            <PlaceholderPage title="Dashboard da carteira" description="Base de navegação pronta para a jornada financeira." />
+            <WalletDashboardPage />
           </WalletGuard>
         ),
       },
