@@ -5,6 +5,28 @@
 - Node.js 20+
 - npm 10+
 
+## Ambiente padrao formal
+
+Este ambiente e a referencia oficial para validar NFR-005, SC-008 e SC-009.
+
+- SO referencia: Windows 11 23H2 (equivalentes aceitos: Ubuntu 22.04 LTS e macOS 14)
+- Runtime: Node.js 20 LTS e npm 10+
+- Browser de benchmark: Chrome 125 headless (CI) / Chrome estavel local
+- Hardware referencia: 4 vCPU, 8 GB RAM
+- Rede de teste: latencia local <= 20 ms, sem throttling
+- Dataset de validacao:
+  - 2 contas ativas + 1 conta inativa
+  - 2 cartoes ativos
+  - 200 transacoes
+  - 30 despesas de cartao e 10 estornos
+
+Metodo de medicao:
+
+1. Executar 50 iteracoes por jornada critica.
+2. Descartar as 5 primeiras (warm-up).
+3. Calcular p90 sobre as 45 restantes.
+4. Validar SLA de vinculo (<1s) por operacao dedicada.
+
 ## Setup inicial (quando iniciar implementação)
 
 1. Criar app React + TypeScript strict (Vite).
@@ -27,7 +49,7 @@
 ## Estrutura mínima esperada
 
 - src/app/router
-- src/features/{wallets,transactions,accounts,cards,permissions,audit}
+- src/features/{wallets,transactions,accounts,cards,permissions,audit,persistence,observability}
 - src/services/{api,mock}
 - src/schemas
 - tests/{unit,integration,e2e}
@@ -81,6 +103,11 @@ Executar e registrar evidencias para os sete testes minimos obrigatorios:
 7. Regressao de calculo exibido
 
 - apos submissao valida no formulario, resumo e lista devem refletir os novos calculos.
+
+8. Regra de duplicidade em criacao e edicao
+
+- ao criar ou editar com possivel duplicidade, o sistema deve bloquear salvamento automatico e exigir confirmacao explicita;
+- em edicao, o detector deve acionar apenas se houver mudanca de valor, data, tipo ou vinculo principal (conta/cartao).
 
 ## Validacao complementar de auditoria (FR-014)
 

@@ -1,241 +1,274 @@
 # Tasks: Gestao de Carteiras, Contas e Transacoes
 
-**Feature Branch**: `001-carteiras-transacoes`
+**Input**: Design documents from `/specs/001-carteiras-transacoes/`
 
-**Input**: Documentos de design de `/specs/001-carteiras-transacoes/`
+**Prerequisites**: plan.md (required), spec.md (required), research.md, data-model.md, contracts/frontend-api.yaml, quickstart.md
 
-**Prerequisites**: plan.md (obrigatorio), spec.md (obrigatorio), research.md, data-model.md, contracts/frontend-api.yaml, quickstart.md
+**Tests**: Testes sao obrigatorios nesta feature porque a spec e o plano exigem o baseline minimo de interface, validacao de formularios, cobertura de permissao na UI e evidencias de integridade financeira.
 
-**Tests**: As tarefas de teste sao obrigatorias nesta feature porque spec/plan exigem comprovacao de FR-014/SC-013 e NFR-003.
+**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-**Organization**: As tarefas estao agrupadas por historia de usuario para permitir implementacao e validacao independentes.
-
-## Formato: `[ID] [P?] [Story?] Descricao com caminho de arquivo`
+## Format: `[ID] [P?] [Story?] Description with file path`
 
 ---
 
-## Fase 1: Setup (Inicializacao do Projeto)
+## Phase 1: Setup
 
-**Purpose**: Preparar toolchain e estrutura base do projeto.
+**Purpose**: Inicializar o app React, o toolchain e a estrutura alvo definida no plano.
 
-- [ ] T001 Inicializar projeto React + TypeScript strict em package.json e tsconfig.json
-- [ ] T002 Configurar entrada e build do Vite em vite.config.ts e src/main.tsx
-- [ ] T003 [P] Configurar ESLint e Prettier em eslint.config.js e .prettierrc
-- [ ] T004 [P] Configurar Vitest e Testing Library em vitest.config.ts e tests/setup.ts
-- [ ] T005 [P] Configurar Playwright em playwright.config.ts e tests/e2e/.gitkeep
-- [ ] T006 Criar estrutura inicial de pastas em src/app/router/.gitkeep e src/features/.gitkeep
-
----
-
-## Fase 2: Fundacao (Pre-requisitos Bloqueantes)
-
-**Purpose**: Entregas compartilhadas obrigatorias antes de qualquer historia de usuario.
-
-**CRITICAL**: Todas as tarefas desta fase devem ser concluidas antes de iniciar US1/US2/US3.
-
-- [ ] T007 Definir tipos de dominio compartilhados (Wallet, Account, Card, Transaction, Permission, AuditEvent) em src/types/domain.ts
-- [ ] T008 [P] Implementar cliente de API e helpers de query em src/services/api/client.ts e src/services/api/queries.ts
-- [ ] T009 [P] Implementar bootstrap do MSW e handlers baseados no contrato em src/services/mock/browser.ts e src/services/mock/handlers.ts
-- [ ] T010 [P] Implementar utilitarios de precisao financeira com decimal.js em src/shared/money.ts
-- [ ] T011 [P] Implementar schemas Zod compartilhados de wallet/account/card/transaction em src/schemas/walletSchema.ts e src/schemas/transactionSchema.ts
-- [ ] T012 Implementar mapa de rotas com guardas de autenticacao/papel e boundaries de erro em src/app/router/routes.tsx e src/app/router/guards.ts
-- [ ] T062 [P] Criar testes unitarios de roteamento para parse de params e guardas de acesso em tests/unit/router/routerGuardsAndParams.test.ts [Req: Constitution-III]
-- [ ] T063 [P] Criar testes de integracao de navegacao com deep links, fallback e error boundaries em tests/integration/router/routerNavigationContractFlow.test.ts [Req: Constitution-III]
-- [ ] T064 [P] Criar cenario E2E de contrato de navegacao (params, guards, redirecionamentos e recuperacao de erro) em tests/e2e/router-contract.spec.ts [Req: Constitution-III]
-- [ ] T013 [P] Implementar mapeamento de terminologia de permissao (leitura/leitura+edicao/acesso_total_operacional) em src/features/permissions/permissionLabels.ts
-- [ ] T014 [P] Implementar builder e dispatcher centralizados de auditoria em src/features/audit/auditEventBuilder.ts e src/features/audit/auditDispatcher.ts [Req: FR-014, FR-014A]
-- [ ] T015 [P] Criar testes de contrato do schema AuditEvent e endpoint de auditoria em tests/contract/audit-events.contract.test.ts [Req: FR-014, SC-013]
-- [ ] T016 [P] Criar utilitarios compartilhados de teste de acessibilidade (teclado/foco/aria) em tests/integration/a11y/a11yTestUtils.ts [Req: NFR-003]
-
-**Checkpoint**: Fundacao concluida; historias podem ser implementadas de forma independente.
+- [X] T001 Inicializar o projeto React 19 + TypeScript strict em ./package.json e ./tsconfig.json
+- [X] T002 Configurar Vite, bootstrap da aplicacao e providers base em ./vite.config.ts, src/main.tsx e src/app/providers/AppProviders.tsx
+- [X] T003 [P] Configurar ESLint e Prettier em ./eslint.config.js, ./.prettierrc e ./.prettierignore
+- [X] T004 [P] Configurar Vitest e Testing Library em ./vitest.config.ts e tests/setup.ts
+- [X] T005 [P] Configurar Playwright em ./playwright.config.ts e tests/e2e/.gitkeep
+- [X] T006 Criar a estrutura inicial de app e features em src/app/router/.gitkeep, src/features/.gitkeep, src/services/.gitkeep e src/schemas/.gitkeep
 
 ---
 
-## Fase 3: User Story 1 - Operar uma carteira financeira (Priority: P1) MVP
+## Phase 2: Foundational
 
-**Goal**: Permitir operacoes de transacao (entrada/saida/transferencia), efeito de status em saldos e visualizacao consolidada da carteira.
+**Purpose**: Entregar a infraestrutura compartilhada que bloqueia todas as historias de usuario.
 
-**Independent Test**: Registrar entrada/saida/transferencia, validar impacto por status (principal/projetado) e confirmar comportamento de periodo em transferencia.
+**CRITICAL**: Nenhuma historia pode comecar antes desta fase terminar.
 
-### Testes da User Story 1
+- [ ] T007 Definir os tipos de dominio compartilhados em src/features/shared/types/domain.ts
+- [ ] T008 [P] Implementar utilitarios de dinheiro e datas com decimal-safe arithmetic em src/lib/money.ts e src/lib/dates.ts
+- [ ] T009 [P] Implementar schemas Zod compartilhados de carteira, conta, cartao, transacao e permissao em src/schemas/walletSchemas.ts e src/schemas/transactionSchemas.ts
+- [ ] T093 [P] Implementar schema e validacao de timezone IANA da carteira e normalizacao de timezone default em src/schemas/walletSchemas.ts e src/features/wallets/timezone/timezoneSchema.ts
+- [ ] T094 [P] Implementar utilitarios de conversao UTC-local por timezone da carteira para periodo, recorrencia e fechamento diario em src/lib/dates.ts e src/features/wallets/timezone/timezoneService.ts
+- [ ] T095 [P] Criar teste unitario das regras de timezone da carteira (IANA), conversao UTC e fechamento diario em tests/unit/wallets/timezoneRules.test.ts
+- [ ] T010 [P] Implementar cliente HTTP, chaves de query e adapters de resposta em src/services/api/client.ts e src/services/api/queryKeys.ts
+- [ ] T011 [P] Implementar bootstrap do MSW e handlers baseados em contracts/frontend-api.yaml em src/services/mock/browser.ts, src/services/mock/handlers.ts e src/services/mock/fixtures/wallets.json
+- [ ] T012 Implementar o mapa de rotas por carteira, guards de autenticacao-permissao e error boundaries em src/app/router/routes.tsx e src/app/router/guards.tsx
+- [ ] T013 [P] Criar testes unitarios obrigatorios do contrato de navegacao para params de rota e guardas de autenticacao-permissao em tests/unit/router/routeGuardRules.test.ts
+- [ ] T014 [P] Criar testes de integracao obrigatorios do contrato de navegacao para deep links, back-forward e 404 por carteira em tests/integration/router/navigationContract.test.tsx
+- [ ] T015 [P] Criar cenario E2E obrigatorio do contrato de navegacao cobrindo error boundaries por segmento e recuperacao de rota em tests/e2e/router-contract.spec.ts
+- [ ] T016 [P] Implementar o store append-only de auditoria e journal de mutacoes em src/features/audit/auditStore.ts e src/features/persistence/walletMutationJournal.ts
+- [ ] T017 [P] Implementar a base de telemetria e sinais de erro com correlacao de rota e sessao em src/features/observability/telemetryService.ts e src/features/observability/errorSignalService.ts
+- [ ] T018 [P] Implementar o shell autenticado e carregamento da sessao mock em src/app/layout/AppShell.tsx e src/features/wallets/session/sessionService.ts
 
-- [ ] T017 [P] [US1] Criar testes unitarios para calculo de saldo principal/projetado em tests/unit/transactions/balanceRules.test.ts [Req: FR-016, FR-017, FR-018]
-- [ ] T018 [P] [US1] Criar testes unitarios para restricoes de recorrencia em transferencia em tests/unit/transactions/transferPeriodRules.test.ts [Req: FR-019, FR-020, FR-020B, SC-014]
-- [ ] T019 [P] [US1] Criar teste de integracao do comportamento e validacao do formulario de transacao em tests/integration/transactions/transactionFormFlow.test.ts [Req: FR-004, FR-005, FR-006, FR-007]
-- [ ] T020 [P] [US1] Criar teste de integracao da emissao de auditoria em mudanca de status com changedFields em tests/integration/audit/us1-transaction-audit.test.ts [Req: FR-014, SC-013]
-- [ ] T021 [P] [US1] Criar testes de integracao de acessibilidade da US1 (teclado/foco/erros) em tests/integration/a11y/us1-transactions.a11y.test.ts [Req: NFR-003, SC-016]
-- [ ] T022 [P] [US1] Criar cenario E2E da jornada de transacoes com asserts de auditoria em tests/e2e/us1-transactions.spec.ts [Req: SC-002, SC-006, SC-008, SC-013]
-
-### Implementacao da User Story 1
-
-- [ ] T023 [P] [US1] Implementar servico de dominio de transacoes (criar/editar/excluir/status) em src/features/transactions/transactionService.ts [Req: FR-004, FR-006]
-- [ ] T024 [US1] Implementar regras de transferencia e logica de limpar/ocultar periodo em src/features/transactions/transactionFormState.ts [Req: FR-019, FR-020, FR-020B]
-- [ ] T025 [US1] Implementar UI do formulario de transacao com RHF + Zod em src/features/transactions/components/TransactionForm.tsx [Req: FR-004, FR-007]
-- [ ] T026 [US1] Implementar lista de transacoes e filtros por periodo/status em src/features/transactions/components/TransactionList.tsx [Req: FR-015]
-- [ ] T027 [US1] Implementar widget de consolidado da carteira em src/features/transactions/components/WalletConsolidatedSummary.tsx [Req: FR-015]
-- [ ] T028 [US1] Implementar integracao de auditoria de transacao (criar/editar/excluir/status) em src/features/transactions/transactionAuditBridge.ts [Req: FR-014, SC-013]
-- [ ] T029 [US1] Implementar ajustes de acessibilidade da US1 (ordem de tab, labels, erros com aria-live, focus trap de modal) em src/features/transactions/components/TransactionForm.tsx [Req: NFR-003, SC-016]
-
-**Checkpoint**: US1 concluida e validavel de forma independente como MVP.
+**Checkpoint**: Fundacao pronta; US1, US2 e US3 podem ser executadas em paralelo.
 
 ---
 
-## Fase 4: User Story 2 - Estruturar contas, cartoes e limite de carteiras (Priority: P2)
+## Phase 3: User Story 1 - Operar uma carteira financeira (Priority: P1)
 
-**Goal**: Gerenciar carteiras/contas/cartoes com limite, arquivamento, recalc por hard-delete e restricoes de estorno.
+**Goal**: Permitir criar e visualizar transacoes com saldo principal-projetado, recorrencia para entrada e saida, e regra visual correta para transferencia.
 
-**Independent Test**: Validar limite de carteiras, ciclo de vida de conta/cartao, bloqueios de exclusao, escopo de recalculo e regras de estorno.
+**Independent Test**: Em uma carteira com contas ativas, o usuario consegue criar entrada, saida e transferencia; o formulario valida dados; transferencia oculta e limpa periodo; resumo e lista refletem os calculos corretos.
 
-### Testes da User Story 2
+### Tests for User Story 1
 
-- [ ] T030 [P] [US2] Criar testes unitarios das regras de dominio de carteira/conta/cartao em tests/unit/accounts-cards/domainRules.test.ts [Req: FR-001, FR-021, FR-022, FR-023, FR-028]
-- [ ] T031 [P] [US2] Criar testes unitarios do escopo de recalculo apos hard-delete em tests/unit/accounts-cards/recalculationScope.test.ts [Req: FR-025, FR-026, FR-027, SC-010]
-- [ ] T032 [P] [US2] Criar testes unitarios das regras de estorno parcial/total em tests/unit/cards/refundRules.test.ts [Req: FR-031, SC-012]
-- [ ] T033 [P] [US2] Criar teste de integracao de CRUD e arquivamento de conta/cartao em tests/integration/accounts-cards/lifecycleFlow.test.ts [Req: FR-002, FR-003, FR-024]
-- [ ] T034 [P] [US2] Criar teste de integracao de bloqueio de exclusao de conta com cartao vinculado em tests/integration/accounts-cards/accountDeleteGuardFlow.test.ts [Req: FR-028, FR-028A, SC-011]
-- [ ] T035 [P] [US2] Criar teste de integracao da emissao de auditoria nas operacoes de conta/cartao em tests/integration/audit/us2-account-card-audit.test.ts [Req: FR-014, SC-013]
-- [ ] T036 [P] [US2] Criar testes de integracao de acessibilidade da US2 (formularios/modais/retorno de foco) em tests/integration/a11y/us2-accounts-cards.a11y.test.ts [Req: NFR-003, SC-016]
-- [ ] T037 [P] [US2] Criar cenario E2E da jornada de carteira/conta/cartao com verificacao de recalculo em tests/e2e/us2-accounts-cards.spec.ts [Req: SC-003, SC-009, SC-010]
+- [ ] T019 [P] [US1] Criar teste unitario das regras de saldo principal e saldo projetado em tests/unit/transactions/balanceProjection.test.ts
+- [ ] T020 [P] [US1] Criar teste unitario das regras de transferencia sem recorrencia e da regra FR-004A (cartao nao pode ser origem-destino financeiro) em tests/unit/transactions/transferRules.test.ts
+- [ ] T021 [P] [US1] Criar teste de integracao da renderizacao da tela de dashboard e estados loading-empty-error em tests/integration/transactions/dashboardStates.test.tsx
+- [ ] T022 [P] [US1] Criar teste de integracao da validacao do formulario de transacao e do bloqueio de envio invalido em tests/integration/transactions/transactionFormValidation.test.tsx
+- [ ] T023 [P] [US1] Criar teste de integracao do fluxo feliz de criacao de entrada e saida com feedback visual em tests/integration/transactions/transactionHappyPath.test.tsx
+- [ ] T024 [P] [US1] Criar teste de integracao da regra visual de transferencia e limpeza do campo period em tests/integration/transactions/transferPeriodVisibility.test.tsx
+- [ ] T025 [P] [US1] Criar teste de integracao da regressao de calculo exibido no resumo e na lista em tests/integration/transactions/walletSummaryRecalculation.test.tsx
+- [ ] T026 [P] [US1] Criar teste de integracao de acessibilidade da jornada de transacoes incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us1-transactions.a11y.test.tsx
+- [ ] T027 [P] [US1] Criar teste de integracao de telemetria e ErrorSignal em mutacoes criticas e falhas de carregamento de transacoes com erro visivel ao usuario em tests/integration/observability/us1-transactions-observability.test.tsx
+- [ ] T028 [P] [US1] Criar cenario E2E da jornada principal de transacoes em tests/e2e/us1-transactions.spec.ts
+- [ ] T038 [P] [US1] Criar teste de integracao da listagem de despesas com despesas de cartao e filtro por cartao em tests/integration/expenses/expenseListWithCardFilter.test.tsx
+- [ ] T039 [P] [US1] Criar teste de integracao da acao de pagar despesa com debito em conta e atualizacao de status no historico em tests/integration/expenses/payCardExpenseFlow.test.tsx
+- [ ] T040 [P] [US1] Criar teste unitario do detector de duplicidade com janela de 5 minutos para criacao e edicao em tests/unit/transactions/duplicateDetectionWindow.test.ts
+- [ ] T041 [P] [US1] Criar teste de integracao do tratamento de resposta 409 com confirmacao explicita antes de persistir em tests/integration/transactions/duplicateConfirmationFlow.test.tsx
+- [ ] T096 [P] [US1] Criar teste de integracao do uso de timezone IANA da carteira nos calculos de periodo/recorrencia com persistencia UTC de timestamps em tests/integration/transactions/walletTimezoneRenderingAndPersistence.test.tsx
 
-### Implementacao da User Story 2
+### Implementation for User Story 1
 
-- [ ] T038 [P] [US2] Implementar servico de carteiras com regra de no maximo duas carteiras em src/features/wallets/walletService.ts [Req: FR-001]
-- [ ] T039 [P] [US2] Implementar servico de contas com arquivar/reativar e hooks de bloqueio de exclusao em src/features/accounts/accountService.ts [Req: FR-002, FR-021, FR-028, FR-028A]
-- [ ] T040 [P] [US2] Implementar servico de cartoes com vinculo/alteracao de conta de debito em src/features/cards/cardService.ts [Req: FR-029, FR-030]
-- [ ] T041 [US2] Implementar fluxos de hard-delete e recalculo por carteira em src/features/accounts/accountHardDeleteService.ts e src/features/cards/cardHardDeleteService.ts [Req: FR-025, FR-026, FR-027]
-- [ ] T042 [US2] Implementar servico e fluxo de UI para estorno parcial/total em src/features/cards/refundService.ts e src/features/cards/components/RefundForm.tsx [Req: FR-031]
-- [ ] T043 [US2] Implementar ponte de integracao de auditoria para conta/cartao em src/features/accounts/accountsAuditBridge.ts e src/features/cards/cardsAuditBridge.ts [Req: FR-014, SC-013]
-- [ ] T044 [US2] Implementar ajustes de acessibilidade da US2 para formularios e modais de confirmacao em src/features/accounts/components/AccountForm.tsx e src/features/cards/components/CardForm.tsx [Req: NFR-003, SC-016]
+- [ ] T029 [P] [US1] Implementar o servico de transacoes com regras de status, recorrencia, transferencia e enforcement explicito de FR-004A em src/features/transactions/transactionService.ts
+- [ ] T030 [P] [US1] Implementar a projecao de saldo da carteira e agregados por periodo em src/features/transactions/walletProjection.ts
+- [ ] T031 [US1] Implementar a pagina de dashboard da carteira em src/features/transactions/pages/WalletDashboardPage.tsx
+- [ ] T032 [US1] Implementar o formulario de transacao com React Hook Form e Zod em src/features/transactions/components/TransactionForm.tsx
+- [ ] T033 [US1] Implementar a lista de transacoes com filtros de periodo e status em src/features/transactions/components/TransactionList.tsx
+- [ ] T034 [US1] Implementar o resumo consolidado com saldo principal, saldo projetado e totais em src/features/transactions/components/WalletSummaryCard.tsx
+- [ ] T035 [US1] Integrar auditoria e emissao de journal nas mutacoes de transacao em src/features/transactions/transactionAuditBridge.ts
+- [ ] T036 [US1] Implementar ajustes de acessibilidade da jornada de transacoes em src/features/transactions/components/TransactionForm.tsx e src/features/transactions/pages/WalletDashboardPage.tsx
+- [ ] T037 [US1] Instrumentar TelemetryEvent e ErrorSignal nas mutacoes criticas e falhas de carregamento de transacoes com estado de erro visivel ao usuario em src/features/transactions/transactionObservability.ts e src/features/transactions/pages/WalletDashboardPage.tsx
+- [ ] T042 [P] [US1] Implementar servico de despesas para listagem geral, filtro por cartao e pagamento com debito em conta em src/features/expenses/expenseService.ts
+- [ ] T043 [US1] Implementar UI da listagem de despesas com filtro por cartao e acao pagar despesa em src/features/expenses/components/ExpenseList.tsx e src/features/expenses/components/PayExpenseAction.tsx
+- [ ] T044 [P] [US1] Implementar detector de duplicidade com janela de 5 minutos e fingerprint por valor-data-tipo-vinculo em src/features/transactions/duplicateDetectionService.ts
+- [ ] T045 [US1] Implementar tratamento de 409 na UI com fluxo de confirmacao explicita antes de persistir em src/features/transactions/components/TransactionForm.tsx e src/features/transactions/hooks/useDuplicateConfirmation.ts
+- [ ] T097 [US1] Integrar timezone IANA da carteira no calculo de periodo/recorrencia e garantir serializacao persistida em UTC nas mutacoes em src/features/transactions/transactionService.ts e src/features/transactions/components/TransactionForm.tsx
 
-**Checkpoint**: US2 concluida e validavel de forma independente.
-
----
-
-## Fase 5: User Story 3 - Compartilhar carteira por convite e permissao (Priority: P3)
-
-**Goal**: Habilitar convite de colaborador, alteracao de permissao e bloqueios de acoes estruturais.
-
-**Independent Test**: Convidar colaborador, alterar niveis de permissao, validar bloqueios estruturais e confirmar trilha de auditoria.
-
-### Testes da User Story 3
-
-- [ ] T045 [P] [US3] Criar testes unitarios da matriz de permissao e mapeamento de terminologia em tests/unit/permissions/permissionMatrix.test.ts [Req: FR-009, FR-010, FR-011, FR-012, FR-013]
-- [ ] T046 [P] [US3] Criar teste de integracao de upsert de convite e propagacao de mudanca de permissao em tests/integration/permissions/collaborationFlow.test.ts [Req: FR-008, FR-009]
-- [ ] T047 [P] [US3] Criar teste de integracao de bloqueios estruturais por permissao em tests/integration/permissions/structuralBlockFlow.test.ts [Req: FR-013, SC-004, SC-007]
-- [ ] T048 [P] [US3] Criar teste de integracao dos eventos de auditoria de convite/permissao em tests/integration/audit/us3-invite-permission-audit.test.ts [Req: FR-014, SC-013]
-- [ ] T049 [P] [US3] Criar testes de integracao de acessibilidade da US3 (convites/permissoes) em tests/integration/a11y/us3-collaboration.a11y.test.ts [Req: NFR-003, SC-016]
-- [ ] T050 [P] [US3] Criar cenario E2E da jornada de colaboracao com checks de auditoria e restricoes em tests/e2e/us3-collaboration.spec.ts [Req: SC-004, SC-007, SC-013]
-
-### Implementacao da User Story 3
-
-- [ ] T051 [P] [US3] Implementar servicos de convite e permissao em src/features/invitations/invitationService.ts e src/features/permissions/permissionService.ts [Req: FR-008, FR-009]
-- [ ] T052 [US3] Implementar painel de colaboradores e controles de permissao em src/features/permissions/components/CollaboratorsPanel.tsx [Req: FR-009, FR-010, FR-011, FR-012]
-- [ ] T053 [US3] Implementar enforcement de rota/acao para restricoes estruturais em src/app/router/guards.ts e src/features/permissions/permissionEnforcement.ts [Req: FR-013]
-- [ ] T054 [US3] Implementar ponte de integracao de auditoria para convite/permissao em src/features/invitations/invitationsAuditBridge.ts e src/features/permissions/permissionsAuditBridge.ts [Req: FR-014, SC-013]
-- [ ] T055 [US3] Implementar ajustes de acessibilidade da US3 para interacoes de convite/permissao em src/features/permissions/components/CollaboratorsPanel.tsx [Req: NFR-003, SC-016]
-
-**Checkpoint**: US3 concluida e validavel de forma independente.
+**Checkpoint**: US1 pronta como MVP e validavel de forma independente.
 
 ---
 
-## Fase 6: Polish & Cross-Cutting Concerns
+## Phase 4: User Story 2 - Estruturar contas, cartoes e limite de carteiras (Priority: P2)
 
-**Purpose**: Gates finais de qualidade, verificacoes transversais e prontidao para release.
+**Goal**: Gerenciar carteiras, contas e cartoes com limite de duas carteiras, arquivamento, bloqueios de exclusao e recalc por hard-delete.
 
-- [ ] T056 [P] Criar testes da matriz de cobertura de auditoria entre dominios (account/card/transaction/invite/permission) em tests/integration/audit/auditCoverageMatrix.test.ts [Req: FR-014, SC-013]
-- [ ] T057 [P] Criar testes de regressao de imutabilidade da auditoria em cenarios de hard-delete em tests/integration/audit/auditImmutabilityRegression.test.ts [Req: FR-014A, SC-015]
-- [ ] T058 [P] Criar suite consolidada de regressao de acessibilidade para US1/US2/US3 em tests/e2e/a11y-critical-journeys.spec.ts [Req: NFR-003, SC-016]
-- [ ] T059 [P] Criar suite de validacao de performance da listagem de transacoes com p90 <= 2s em tests/integration/performance/transactions-p90.test.ts [Req: NFR-005, SC-005]
-- [ ] T060 Configurar gate obrigatorio de CI com typecheck, lint, testes e build em .github/workflows/ci.yml
-- [ ] T061 Atualizar passos de validacao no quickstart e checklist de evidencias de requisitos em specs/001-carteiras-transacoes/quickstart.md
-- [ ] T065 [P] Criar testes de integracao para telemetria estruturada e sinais de erro em tests/integration/observability/observabilityFlow.test.ts [Req: NFR-004]
-- [ ] T066 [P] Implementar dispatcher append-only do journal de mutacoes e projecoes derivadas em src/features/persistence/walletMutationJournal.ts e src/features/persistence/walletSnapshotProjection.ts [Req: FR-002, FR-014A, FR-027]
-- [ ] T067 [P] Implementar servicos de telemetria e error signal correlacionados com rota/carteira/sessao em src/features/observability/telemetryService.ts e src/features/observability/errorSignalService.ts [Req: NFR-004]
-- [ ] T068 Atualizar contrato e fixtures de observabilidade em specs/001-carteiras-transacoes/contracts/frontend-api.yaml e src/services/mock/fixtures/observability.json [Req: NFR-004]
+**Independent Test**: O usuario consegue criar ate duas carteiras, arquivar e reativar contas-cartoes, alterar conta de debito do cartao e ver bloqueio de exclusao quando houver vinculos ativos.
+
+### Tests for User Story 2
+
+- [ ] T046 [P] [US2] Criar teste unitario das regras de limite de carteiras e estados ativo-inativo em tests/unit/wallets/walletRules.test.ts
+- [ ] T047 [P] [US2] Criar teste unitario do recalc apos hard-delete de conta e cartao em tests/unit/accounts-cards/hardDeleteRecalculation.test.ts
+- [ ] T048 [P] [US2] Criar teste unitario das regras de estorno parcial e total em tests/unit/cards/refundRules.test.ts
+- [ ] T049 [P] [US2] Criar teste de integracao obrigatorio da validacao de AccountForm e CardForm com bloqueio de envio invalido em tests/integration/accounts-cards/formsValidation.test.tsx
+- [ ] T050 [P] [US2] Criar teste de integracao obrigatorio dos estados loading-empty-error das listagens de contas e cartoes em tests/integration/accounts-cards/listStates.test.tsx
+- [ ] T051 [P] [US2] Criar teste de integracao do CRUD e arquivamento de contas-cartoes incluindo FR-003A (tela de cartao lista despesas e creditos vinculados) em tests/integration/accounts-cards/lifecycleFlow.test.tsx
+- [ ] T052 [P] [US2] Criar teste de integracao do bloqueio de exclusao de conta com cartao vinculado em tests/integration/accounts-cards/accountDeleteGuard.test.tsx
+- [ ] T053 [P] [US2] Criar teste de integracao da orientacao de troca ou desvinculacao antes da exclusao em tests/integration/accounts-cards/accountDeleteGuidance.test.tsx
+- [ ] T054 [P] [US2] Criar teste de integracao de acessibilidade da jornada de contas e cartoes incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us2-accounts-cards.a11y.test.tsx
+- [ ] T055 [P] [US2] Criar teste de integracao de telemetria e ErrorSignal em mutacoes criticas, falhas de carregamento e bloqueios de exclusao de contas-cartoes em tests/integration/observability/us2-accounts-cards-observability.test.tsx
+- [ ] T056 [P] [US2] Criar cenario E2E da jornada de carteiras, contas e cartoes incluindo troca de conta de debito e medicao de vinculo para SC-009-FR-030A em tests/e2e/us2-accounts-cards.spec.ts
+
+### Implementation for User Story 2
+
+- [ ] T057 [P] [US2] Implementar o servico de carteiras com limite maximo de duas por usuario em src/features/wallets/walletService.ts
+- [ ] T058 [P] [US2] Implementar o servico de contas com arquivar, reativar e bloqueios de exclusao em src/features/accounts/accountService.ts
+- [ ] T059 [P] [US2] Implementar o servico de cartoes com vinculo e troca de conta de debito com instrumentacao de latencia para FR-030A-SC-009 em src/features/cards/cardService.ts
+- [ ] T060 [P] [US2] Implementar endpoint-view de detalhe do cartao com registros vinculados para FR-003A em src/features/cards/cardDetailService.ts e src/features/cards/components/CardDetailRecords.tsx
+- [ ] T061 [US2] Implementar o fluxo de hard-delete e recalc da carteira atual em src/features/accounts/accountHardDeleteService.ts e src/features/cards/cardHardDeleteService.ts
+- [ ] T062 [US2] Implementar validacao explicita e mensagens por campo no AccountForm e CardForm em src/features/accounts/components/AccountForm.tsx e src/features/cards/components/CardForm.tsx
+- [ ] T063 [US2] Implementar estados loading-empty-error e feedback de erro visivel nas listagens AccountList e CardList em src/features/accounts/components/AccountList.tsx e src/features/cards/components/CardList.tsx
+- [ ] T064 [US2] Implementar o fluxo de estorno parcial e total em src/features/cards/refundService.ts e src/features/cards/components/RefundForm.tsx
+- [ ] T065 [US2] Integrar auditoria das operacoes de conta e cartao em src/features/accounts/accountsAuditBridge.ts e src/features/cards/cardsAuditBridge.ts
+- [ ] T066 [US2] Implementar ajustes de acessibilidade da jornada de contas e cartoes em src/features/accounts/components/AccountForm.tsx, src/features/accounts/components/AccountList.tsx, src/features/cards/components/CardForm.tsx e src/features/cards/components/CardList.tsx
+- [ ] T067 [US2] Instrumentar TelemetryEvent e ErrorSignal em mutacoes criticas, falhas de carregamento e bloqueios de contas-cartoes com erro visivel ao usuario em src/features/accounts/accountsObservability.ts e src/features/cards/cardsObservability.ts
+
+**Checkpoint**: US2 pronta e validavel de forma independente.
 
 ---
 
-## Dependencias e Ordem de Execucao
+## Phase 5: User Story 3 - Compartilhar carteira com outro usuario por e-mail (Priority: P3)
 
-### Dependencias por fase
+**Goal**: Permitir convites por e-mail, alteracao de permissao e protecao de UI conforme o papel do convidado.
 
-- Fase 1 -> inicia imediatamente.
-- Fase 2 -> depende da Fase 1 e bloqueia todas as historias.
-- Fase 3 (US1), Fase 4 (US2), Fase 5 (US3) -> cada uma depende da Fase 2.
-- Fase 6 -> depende da conclusao das historias selecionadas para release.
-- Checkpoint final de release -> depende obrigatoriamente da conclusao de T060 (gate de CI) e T061.
+**Independent Test**: O dono convida um colaborador, altera o nivel de permissao e a UI reage imediatamente ocultando ou bloqueando acoes nao permitidas sem afetar a estrutura da carteira.
 
-### Dependencias entre historias
+### Tests for User Story 3
 
-- US1 (P1) -> sem dependencia de outras historias apos Fase 2.
-- US2 (P2) -> sem dependencia de US1 apos Fase 2; integra apenas fundamentos compartilhados.
-- US3 (P3) -> sem dependencia de US1/US2 apos Fase 2; depende da fundacao de permissao/auditoria.
+- [ ] T068 [P] [US3] Criar teste unitario da matriz de permissao e do mapeamento leitura-edit-operate em tests/unit/permissions/permissionMatrix.test.ts
+- [ ] T069 [P] [US3] Criar teste de integracao do formulario de convite com validacao de e-mail em tests/integration/permissions/inviteFormValidation.test.tsx
+- [ ] T070 [P] [US3] Criar teste de integracao do upsert de convite e atualizacao imediata de permissao em tests/integration/permissions/collaborationFlow.test.tsx
+- [ ] T071 [P] [US3] Criar teste de integracao da protecao basica de permissao na UI em tests/integration/permissions/uiPermissionProtection.test.tsx
+- [ ] T072 [P] [US3] Criar teste de integracao de acessibilidade da jornada de colaboracao incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us3-collaboration.a11y.test.tsx
+- [ ] T073 [P] [US3] Criar teste de integracao de telemetria e ErrorSignal em convites, mudancas de permissao e bloqueios visuais com erro visivel ao usuario em tests/integration/observability/us3-collaboration-observability.test.tsx
+- [ ] T074 [P] [US3] Criar cenario E2E da jornada de colaboracao por carteira em tests/e2e/us3-collaboration.spec.ts
 
-### Ordem interna por historia (para cada US)
+### Implementation for User Story 3
 
-- Primeiro tarefas de teste (unit/integration/e2e).
-- Depois implementacao de servicos/dominio.
-- Depois integracao de UI.
-- Antes do checkpoint da historia, concluir auditoria e acessibilidade da propria US.
+- [ ] T075 [P] [US3] Implementar os servicos de convite e permissao por carteira em src/features/permissions/permissionService.ts e src/features/permissions/invitationService.ts
+- [ ] T076 [US3] Implementar o painel de colaboradores e niveis de acesso em src/features/permissions/components/CollaboratorsPanel.tsx
+- [ ] T077 [US3] Implementar enforcement de guardas e bloqueios visuais por papel em src/features/permissions/permissionEnforcement.ts e src/app/router/guards.tsx
+- [ ] T078 [US3] Integrar auditoria para convites e alteracoes de permissao em src/features/permissions/permissionsAuditBridge.ts
+- [ ] T079 [US3] Implementar ajustes de acessibilidade da jornada de colaboracao em src/features/permissions/components/CollaboratorsPanel.tsx
+- [ ] T080 [US3] Instrumentar TelemetryEvent e ErrorSignal em convites, mudancas de permissao e bloqueios visuais com erro visivel ao usuario em src/features/permissions/permissionsObservability.ts e src/features/permissions/components/CollaboratorsPanel.tsx
 
-### Oportunidades de paralelismo
+**Checkpoint**: US3 pronta e validavel de forma independente.
+
+---
+
+## Phase 6: Polish & Cross-Cutting Concerns
+
+**Purpose**: Fechar quality gates, documentacao e validacoes transversais definidas pela constitution e pelo quickstart.
+
+- [ ] T081 [P] Criar teste de integracao da imutabilidade da auditoria apos hard-delete de negocio em tests/integration/audit/auditImmutability.test.tsx
+- [ ] T082 [P] Criar teste de integracao da separacao entre auditoria, telemetria e sinais de erro em tests/integration/observability/observabilitySeparation.test.tsx
+- [ ] T083 [P] Criar teste de validacao do budget de performance p90 <= 2s vinculado a NFR-005 e SC-008 em tests/integration/performance/criticalJourneysP90.test.ts
+- [ ] T084 [P] Criar teste de performance dedicado SC-009-FR-030A para operacoes de vinculo conta-cartao e registro-cartao (<1s) em tests/integration/performance/linkOperationsUnder1s.test.ts
+- [ ] T085 [P] Criar fixture do ambiente padrao para benchmark de vinculo e jornadas principais em tests/fixtures/performance/standardEnvironment.fixture.ts
+- [ ] T086 [P] Criar teste de integracao de acessibilidade basica por teclado, labels e mensagens de erro em tests/integration/a11y/criticalJourneysA11y.test.tsx
+- [ ] T087 Configurar o gate obrigatorio de CI com lint, typecheck, build e testes em .github/workflows/ci.yml
+- [ ] T088 Atualizar os passos de validacao e evidencias no quickstart da feature em specs/001-carteiras-transacoes/quickstart.md
+- [ ] T089 Executar a validacao final do quickstart e registrar o checklist de release em specs/001-carteiras-transacoes/checklists/quality.md
+- [ ] T090 [P] Criar teste de contrato da trilha de auditoria validando schema obrigatorio de eventos (walletId, autor, papel, acao, entidade, timestamp, changedFields) em tests/integration/audit/auditEventSchemaContract.test.ts
+- [ ] T091 [P] Criar teste de integracao transversal de modal-confirm dialog com foco preso e retorno ao gatilho original em tests/integration/a11y/modalFocusTrapAndReturn.test.tsx
+- [ ] T092 [P] Criar teste de integracao explicito do bloqueio de transferencia entre carteiras diferentes (FR-005) em tests/integration/transactions/crossWalletTransferGuard.test.tsx
+
+---
+
+## Dependencies & Execution Order
+
+### Phase Dependencies
+
+- Setup (Phase 1) inicia imediatamente.
+- Foundational (Phase 2) depende da Setup e bloqueia todas as historias.
+- US1, US2 e US3 dependem da conclusao da Foundational.
+- Polish (Phase 6) depende das historias selecionadas para release.
+
+### User Story Dependencies
+
+- US1 e a entrega MVP inicial apos a fase foundational.
+- US2 depende apenas da fundacao compartilhada e pode rodar em paralelo com US1.
+- US3 depende apenas da fundacao compartilhada e pode rodar em paralelo com US1 e US2.
+
+### Within Each User Story
+
+- Escrever os testes da historia antes da implementacao.
+- Implementar servicos e regras de dominio antes da UI.
+- Concluir integracao com auditoria e journal antes do checkpoint da historia.
+
+### Parallel Opportunities
 
 - Setup em paralelo: T003, T004, T005.
-- Fundacao em paralelo: T008, T009, T010, T011, T013, T014, T015, T016, T062, T063.
-- Testes US1 em paralelo: T017-T022.
-- Testes US2 em paralelo: T030-T037.
-- Testes US3 em paralelo: T045-T050.
-- Regressoes finais em paralelo: T056, T057, T058, T059.
+- Foundational em paralelo: T008, T009, T093, T094, T095, T010, T011, T013, T014, T015, T016, T017.
+- US1 em paralelo: T019-T028, T038-T044, T096.
+- US2 em paralelo: T046-T056.
+- US3 em paralelo: T068-T074.
+- Polish em paralelo: T081, T082, T083, T084, T085, T086, T090, T091, T092.
 
 ---
 
-## Matriz de Rastreabilidade (Tarefas -> Requisitos)
+## Parallel Example: User Story 1
 
-- FR-014, SC-013 (auditoria completa): T014, T015, T020, T028, T035, T043, T048, T054, T056
-- FR-014A, SC-015 (imutabilidade de auditoria): T014, T057
-- NFR-003, SC-016 (acessibilidade por jornada):
-  - US1: T021, T029
-  - US2: T036, T044
-  - US3: T049, T055
-  - Regressao transversal: T058
-- FR-009/FR-010/FR-011/FR-012/FR-013 (matriz de permissao): T013, T045, T047, T051, T052, T053
-- FR-019/FR-020/FR-020B, SC-014 (transferencia sem recorrencia): T018, T024
-- FR-025/FR-026/FR-027, SC-010 (hard-delete + recalculo por carteira): T031, T041
-- NFR-004 (observabilidade estruturada por acao critica): T065, T067, T068
-- FR-002/FR-014A/FR-027 (persistencia append-only e projecoes derivadas): T066
-- Constitution III (contrato de navegacao com params/guards/error boundaries): T012, T062, T063, T064
+```bash
+Task: "Criar teste unitario das regras de saldo principal e saldo projetado em tests/unit/transactions/balanceProjection.test.ts"
+Task: "Criar teste de integracao da validacao do formulario de transacao e do bloqueio de envio invalido em tests/integration/transactions/transactionFormValidation.test.tsx"
+Task: "Criar teste de integracao da listagem de despesas com filtro por cartao em tests/integration/expenses/expenseListWithCardFilter.test.tsx"
+Task: "Criar teste unitario do detector de duplicidade (janela de 5 minutos) em tests/unit/transactions/duplicateDetectionWindow.test.ts"
+```
 
----
+## Parallel Example: User Story 2
 
-## Estrategia de Implementacao
+```bash
+Task: "Criar teste de integracao da validacao do AccountForm e CardForm em tests/integration/accounts-cards/formsValidation.test.tsx"
+Task: "Criar teste de integracao dos estados loading-empty-error das listagens de contas e cartoes em tests/integration/accounts-cards/listStates.test.tsx"
+Task: "Instrumentar TelemetryEvent e ErrorSignal em mutacoes, falhas de carregamento e bloqueios de contas-cartoes em src/features/accounts/accountsObservability.ts e src/features/cards/cardsObservability.ts"
+```
 
-### MVP primeiro (somente US1)
+## Parallel Example: User Story 3
 
-1. Concluir Fase 1 e Fase 2.
-2. Concluir US1 (T017-T029).
-3. Validar US1 de forma independente contra FR/SC mapeados.
-4. Demonstrar/entregar MVP.
-
-### Entrega incremental
-
-1. Base pronta (Fase 1 + Fase 2).
-2. Entregar US1, depois US2, depois US3 com validacoes independentes.
-3. Executar Fase 6 e liberar somente apos CI gate obrigatorio (T060) aprovado.
-
-### Estrategia de time em paralelo
-
-1. O time conclui fundacao em conjunto.
-2. Apos T016:
-   - Dev A executa US1
-   - Dev B executa US2
-   - Dev C executa US3
-3. Executar Fase 6 em conjunto.
+```bash
+Task: "Criar teste de integracao do formulario de convite com validacao de e-mail em tests/integration/permissions/inviteFormValidation.test.tsx"
+Task: "Criar teste de integracao de acessibilidade da jornada de colaboracao em tests/integration/a11y/us3-collaboration.a11y.test.tsx"
+Task: "Instrumentar TelemetryEvent e ErrorSignal em convites, mudancas de permissao e bloqueios visuais em src/features/permissions/permissionsObservability.ts e src/features/permissions/components/CollaboratorsPanel.tsx"
+```
 
 ---
 
-## Notas
+## Implementation Strategy
 
-- Todas as tarefas seguem formato estrito de checklist com ID e caminho de arquivo.
-- O marcador [P] e usado apenas em tarefas que podem rodar em paralelo com seguranca.
-- O marcador [USx] aparece somente nas fases de historias de usuario.
-- IDs de requisitos estao embutidos nas descricoes para rastreabilidade direta.
+### MVP First
+
+1. Concluir Phase 1 e Phase 2.
+2. Concluir US1.
+3. Validar a jornada principal de transacoes como incremento minimo utilizavel.
+
+### Incremental Delivery
+
+1. Entregar a fundacao compartilhada.
+2. Entregar US1 e validar o baseline minimo de interface.
+3. Entregar US2 com bloqueios de exclusao, recalc e estornos.
+4. Entregar US3 com convites, papeis e protecao de UI.
+5. Fechar os gates finais de CI, observabilidade e acessibilidade complementar.
+
+### Team Strategy
+
+1. O time fecha Setup e Foundational em conjunto.
+2. Depois disso, uma pessoa pode assumir US1, outra US2 e outra US3.
+3. Polish fica para consolidacao final antes do merge.
+
+---
+
+## Notes
+
+- Todas as tarefas seguem o formato estrito de checklist com ID, marcador opcional de paralelismo, marcador de historia quando aplicavel e caminho de arquivo.
+- O baseline minimo de testes obrigatorios desta feature esta concentrado nas tarefas de teste de US1, US2 e US3.
+- Acessibilidade e observabilidade possuem tarefas por jornada e regressao transversal final para evitar gaps de compliance com a constitution.
+- Evidencias de release readiness devem ser registradas em specs/001-carteiras-transacoes/quickstart.md e specs/001-carteiras-transacoes/checklists/quality.md, mantendo tasks.md apenas como plano de trabalho.
+- FR-032 possui cobertura explicita com tarefas dedicadas para timezone IANA da carteira, persistencia UTC e testes de regressao temporal (T093, T094, T095, T096, T097).

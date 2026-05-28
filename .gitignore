@@ -13,6 +13,10 @@ pnpm-debug.log*
 
 # Test outputs
 coverage/
+playwright-report/
+test-results/
+.vite/
+*.tsbuildinfo
 
 # Environment variables
 .env

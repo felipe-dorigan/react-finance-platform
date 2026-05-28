@@ -133,3 +133,60 @@ Regras:
 - Hard-delete remove registros vinculados de conta/cartão/transação/refund na camada operacional e registra mutação de exclusão no journal.
 - Recalcular a carteira atual significa recompor as projeções a partir do journal e do estado operacional remanescente, sem alterar fatos técnicos anteriores.
 - Snapshot é derivado, não fonte de verdade.
+
+## 11) SLA de vinculo conta-cartao e registro-cartao (<1s)
+
+Decision: Adotar validacao dedicada de desempenho para operacoes de vinculo (`card.debit_account_changed` e registro vinculado ao cartao) com assercao de tempo por operacao <1s no ambiente padrao.
+
+Rationale: FR-030A e SC-009 exigem SLA mais restritivo que o budget geral de jornadas (p90 <= 2s), exigindo teste e rastreabilidade explicitos separados de NFR-005/SC-008.
+
+Alternatives considered: Reaproveitar somente o teste de p90 <= 2s das jornadas criticas (rejeitado por nao provar o SLA <1s para operacoes de vinculo).
+
+## 12) Detalhe do cartao com registros vinculados
+
+Decision: Criar tela de detalhe do cartao com listagem dedicada de registros vinculados, exibindo despesas e creditos (estornos) no mesmo contexto funcional.
+
+Rationale: FR-003A exige visibilidade explicita por cartao, o que nao pode ficar implicito apenas em listagens gerais de transacoes.
+
+Alternatives considered: Exibir apenas em lista global filtrada (rejeitado por baixa descobribilidade e rastreabilidade incompleta do requisito).
+
+## 13) Guard explicito para transferencia mesma conta
+
+Decision: Implementar regra de dominio e validacao de UI para bloquear transferencia com `sourceAccountId == destinationAccountId`, com cobertura unit e integration dedicadas.
+
+Rationale: O edge case consta na spec como bloqueio obrigatorio e precisa rastreabilidade objetiva em task/teste para evitar regressao silenciosa.
+
+Alternatives considered: Confiar somente na validacao de backend/mock (rejeitado por UX tardia e falta de feedback imediato no formulario).
+
+## 14) Definicao formal de ambiente padrao
+
+Decision: Fixar um ambiente padrao versionado para medicao de performance (p90 <= 2s) e SLA de vinculo (<1s), com stack e dataset de referencia.
+
+Rationale: Sem ambiente padrao formal, os resultados de SC-008/SC-009 ficam inconsistentes entre execucoes locais e CI, dificultando aceite objetivo.
+
+Alternatives considered: Medicao "best effort" no ambiente de cada dev (rejeitado por variancia alta), e medicao somente em producao (rejeitado por tardio no ciclo).
+
+Definicao formal adotada:
+
+- SO referencia: Windows 11 23H2 (equivalentes aceitos: Ubuntu 22.04 LTS/macOS 14).
+- Runtime: Node.js 20 LTS e npm 10+.
+- Browser de medicao: Chrome 125 headless no CI.
+- Hardware referencia: 4 vCPU, 8 GB RAM.
+- Rede de teste: latencia local <= 20 ms sem throttling.
+- Dataset de referencia por carteira:
+  - 2 contas ativas + 1 inativa
+  - 2 cartoes ativos
+  - 200 transacoes totais
+  - 30 despesas de cartao e 10 estornos
+- Metodo de medicao:
+  - 50 execucoes por jornada
+  - descarte das 5 primeiras (warm-up)
+  - calculo de p90 sobre 45 execucoes validas
+
+## 15) Fluxo tecnico para despesas de cartao e duplicidade
+
+Decision: Tratar despesa de cartao como transacao de despesa vinculada opcionalmente a `cardId`, mantendo movimentacao financeira sempre em conta, e adotar bloqueio com confirmacao explicita quando detector de duplicidade disparar. Na edicao, o detector so deve rodar quando houver alteracao de valor, data, tipo ou vinculo principal (conta/cartao).
+
+Rationale: Mantem conformidade com FR-004A, preserva listagem/filtro de despesas por cartao (FR-033/FR-034), suporta pagamento com debito em conta (FR-035) e evita consolidacao automatica indevida (FR-036/FR-037/FR-038).
+
+Alternatives considered: Entidade separada de despesa fora de `Transaction` (rejeitado por aumento de complexidade nesta fase), consolidacao automatica de duplicados (rejeitado por risco de perda de lancamentos legitimos).

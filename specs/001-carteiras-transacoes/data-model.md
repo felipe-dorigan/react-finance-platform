@@ -19,6 +19,7 @@ Regras:
 - id: string (uuid)
 - ownerId: string (User.id)
 - name: string (1..80)
+- timezone: string (IANA, ex: America/Sao_Paulo)
 - status: "active" | "archived"
 - mainBalance: string (decimal, derived projection)
 - projectedBalance: string (decimal, derived projection)
@@ -30,6 +31,7 @@ Regras:
 - Máximo de 2 carteiras por ownerId.
 - Excluir carteira não faz parte das permissões de convidado.
 - Os saldos exibidos são projeções derivadas do journal de mutações.
+- Regras temporais (recorrência, período, fechamento diário) usam `timezone` da carteira; persistência temporal permanece em UTC.
 
 ### WalletPermission
 
@@ -94,6 +96,9 @@ Regras:
 - sourceAccountId: string | null (Account.id)
 - destinationAccountId: string | null (Account.id)
 - cardId: string | null (Card.id)
+- cardExpensePaymentStatus: null | "unpaid" | "paid"
+- paidFromAccountId: string | null (Account.id)
+- paidAt: string | null (ISO-8601 UTC)
 - description: string | null
 - createdByUserId: string (User.id)
 - createdAt: string
@@ -105,6 +110,26 @@ Regras:
 - Em `transfer`, origem e destino obrigatórias e diferentes.
 - `pending` impacta apenas saldo projetado.
 - `effective` impacta saldo principal e projetado.
+- Quando `type = expense` e `cardId != null`, a despesa aparece na listagem geral e pode ser filtrada por cartão.
+- Ao marcar despesa de cartão como paga, `cardExpensePaymentStatus = paid`, `paidFromAccountId` é obrigatório e o valor é debitado da conta selecionada.
+
+### DuplicateDetectionCandidate (view model)
+
+- fingerprint: string
+- walletId: string (Wallet.id)
+- transactionType: "income" | "expense" | "transfer"
+- amount: string (decimal)
+- date: string (ISO-8601)
+- primaryLinkType: "account" | "card"
+- primaryLinkId: string
+- matchedTransactionId: string (Transaction.id)
+- detectedAt: string (ISO-8601 UTC)
+
+Regras:
+
+- A janela de detecção padrão é 5 minutos.
+- Se houver candidato, o sistema bloqueia criação automática e exige confirmação explícita.
+- Em edição, a detecção só é executada quando houver mudança em `amount`, `date`, `type` ou vínculo principal (`sourceAccountId`/`cardId`).
 
 ### Refund
 
@@ -120,6 +145,22 @@ Regras:
 
 - Soma de estornos não pode exceder valor líquido estornável da despesa.
 - Estorno gera entrada vinculada à despesa original.
+
+### CardLinkedRecord (view model)
+
+- id: string (uuid)
+- walletId: string (Wallet.id)
+- cardId: string (Card.id)
+- type: "expense" | "credit"
+- amount: string (decimal > 0)
+- originalTransactionId: string | null (Transaction.id)
+- occurredAt: string (ISO-8601)
+
+Regras:
+
+- Usado na tela de detalhe do cartao para listar registros vinculados, incluindo despesas e creditos (estornos).
+- `type = credit` representa estorno/credito relacionado ao cartao.
+- A operacao de criacao/alteracao de vinculo conta-cartao e registro-cartao deve cumprir SLA <1s no ambiente padrao.
 
 ### AuditEvent
 

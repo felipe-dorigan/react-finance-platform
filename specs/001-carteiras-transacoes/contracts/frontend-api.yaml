@@ -123,6 +123,18 @@ paths:
           description: Conta de débito inválida/inativa
 
   /wallets/{walletId}/cards/{cardId}:
+    get:
+      summary: Retorna detalhe do cartao e seus registros vinculados
+      parameters:
+        - $ref: "#/components/parameters/WalletId"
+        - $ref: "#/components/parameters/CardId"
+      responses:
+        "200":
+          description: Detalhe do cartao com despesas e creditos vinculados
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CardDetailResponse"
     delete:
       summary: Exclui cartão definitivamente (hard-delete)
       description: Remove o cartão e despesas/estornos vinculados na carteira atual, com recálculo dos agregados.
@@ -132,6 +144,44 @@ paths:
       responses:
         "200":
           description: Cartão e vínculos removidos com recálculo concluído
+
+  /wallets/{walletId}/cards/{cardId}/debit-account:
+    patch:
+      summary: Altera a conta de debito vinculada ao cartao
+      description: Operacao de vinculo conta-cartao com alvo de processamento <1s no ambiente padrao.
+      parameters:
+        - $ref: "#/components/parameters/WalletId"
+        - $ref: "#/components/parameters/CardId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeCardDebitAccountRequest"
+      responses:
+        "200":
+          description: Vinculo atualizado com sucesso
+        "422":
+          description: Conta invalida ou inativa para vinculo
+
+  /wallets/{walletId}/cards/{cardId}/records:
+    post:
+      summary: Registra operacao vinculada ao cartao (despesa ou credito)
+      description: Operacao de vinculo registro-cartao com alvo de processamento <1s no ambiente padrao.
+      parameters:
+        - $ref: "#/components/parameters/WalletId"
+        - $ref: "#/components/parameters/CardId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCardLinkedRecordRequest"
+      responses:
+        "201":
+          description: Registro vinculado ao cartao criado
+        "422":
+          description: Violacao de regra de dominio
 
   /wallets/{walletId}/transactions:
     get:
@@ -143,6 +193,13 @@ paths:
           schema:
             type: string
             enum: [effective, pending]
+        - in: query
+          name: cardId
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Quando informado, filtra somente registros vinculados ao cartão.
       responses:
         "200":
           description: Lista de transações
@@ -165,8 +222,92 @@ paths:
       responses:
         "201":
           description: Transação criada
+        "409":
+          description: Possível duplicidade detectada; confirmação explícita necessária
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DuplicateDetectionError"
         "422":
           description: Violação de regra de domínio
+
+  /wallets/{walletId}/transactions/{transactionId}:
+    patch:
+      summary: Atualiza transação existente
+      description: Na edição, a detecção de duplicidade deve rodar apenas quando valor, data, tipo ou vínculo principal (conta/cartão) forem alterados.
+      parameters:
+        - $ref: "#/components/parameters/WalletId"
+        - $ref: "#/components/parameters/TransactionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTransactionRequest"
+      responses:
+        "200":
+          description: Transação atualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "409":
+          description: Possível duplicidade detectada na edição; confirmação explícita necessária
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DuplicateDetectionError"
+        "422":
+          description: Violação de regra de domínio
+
+  /wallets/{walletId}/expenses:
+    get:
+      summary: Lista despesas da carteira (inclui despesas de cartão)
+      parameters:
+        - $ref: "#/components/parameters/WalletId"
+        - in: query
+          name: cardId
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Quando informado, retorna somente despesas vinculadas ao cartão.
+      responses:
+        "200":
+          description: Lista de despesas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expense"
+
+  /wallets/{walletId}/expenses/{expenseId}/pay:
+    patch:
+      summary: Marca despesa de cartão como paga e debita conta selecionada
+      parameters:
+        - $ref: "#/components/parameters/WalletId"
+        - in: path
+          name: expenseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PayExpenseRequest"
+      responses:
+        "200":
+          description: Despesa atualizada para paga com débito em conta aplicado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+        "422":
+          description: Conta inválida/inativa ou despesa não elegível para pagamento
 
   /wallets/{walletId}/permissions:
     get:
@@ -265,6 +406,13 @@ components:
       schema:
         type: string
         format: uuid
+    TransactionId:
+      in: path
+      name: transactionId
+      required: true
+      schema:
+        type: string
+        format: uuid
     AccountId:
       in: path
       name: accountId
@@ -293,13 +441,16 @@ components:
 
     Wallet:
       type: object
-      required: [id, name, mainBalance, projectedBalance]
+      required: [id, name, timezone, mainBalance, projectedBalance]
       properties:
         id:
           type: string
           format: uuid
         name:
           type: string
+        timezone:
+          type: string
+          description: Timezone IANA da carteira usado para regras temporais de negócio.
         mainBalance:
           type: string
         projectedBalance:
@@ -337,6 +488,37 @@ components:
           type: string
           enum: [active, inactive]
 
+    CardDetailResponse:
+      type: object
+      required: [card, linkedRecords]
+      properties:
+        card:
+          $ref: "#/components/schemas/Card"
+        linkedRecords:
+          type: array
+          items:
+            $ref: "#/components/schemas/CardLinkedRecord"
+
+    CardLinkedRecord:
+      type: object
+      required: [id, cardId, type, amount, occurredAt]
+      properties:
+        id:
+          type: string
+        cardId:
+          type: string
+        type:
+          type: string
+          enum: [expense, credit]
+        amount:
+          type: string
+        originalTransactionId:
+          type: string
+          nullable: true
+        occurredAt:
+          type: string
+          format: date-time
+
     Transaction:
       type: object
       required: [id, walletId, type, status, amount, date]
@@ -366,6 +548,30 @@ components:
         destinationAccountId:
           type: string
           nullable: true
+        cardId:
+          type: string
+          nullable: true
+        cardExpensePaymentStatus:
+          type: string
+          nullable: true
+          enum: [unpaid, paid]
+        paidFromAccountId:
+          type: string
+          nullable: true
+        paidAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    Expense:
+      allOf:
+        - $ref: "#/components/schemas/Transaction"
+        - type: object
+          required: [type]
+          properties:
+            type:
+              type: string
+              enum: [expense]
 
     WalletPermission:
       type: object
@@ -512,6 +718,29 @@ components:
         debitAccountId:
           type: string
 
+    ChangeCardDebitAccountRequest:
+      type: object
+      required: [debitAccountId]
+      properties:
+        debitAccountId:
+          type: string
+
+    CreateCardLinkedRecordRequest:
+      type: object
+      required: [type, amount, occurredAt]
+      properties:
+        type:
+          type: string
+          enum: [expense, credit]
+        amount:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        originalTransactionId:
+          type: string
+          nullable: true
+
     CreateTransactionRequest:
       type: object
       required: [type, status, amount, date]
@@ -537,6 +766,76 @@ components:
         destinationAccountId:
           type: string
           nullable: true
+        cardId:
+          type: string
+          nullable: true
+        duplicateConfirmation:
+          type: boolean
+          default: false
+          description: Deve ser true para persistir quando houver detecção de possível duplicidade.
+
+    UpdateTransactionRequest:
+      type: object
+      description: Campos de transação permitidos para edição. Se campos-chave mudarem, aplicar detector de duplicidade.
+      properties:
+        type:
+          type: string
+          enum: [income, expense, transfer]
+        status:
+          type: string
+          enum: [effective, pending]
+        amount:
+          type: string
+        date:
+          type: string
+          format: date-time
+        period:
+          type: string
+          nullable: true
+          enum: [daily, weekly, monthly, yearly]
+        sourceAccountId:
+          type: string
+          nullable: true
+        destinationAccountId:
+          type: string
+          nullable: true
+        cardId:
+          type: string
+          nullable: true
+        duplicateConfirmation:
+          type: boolean
+          default: false
+          description: Deve ser true para concluir edição quando houver detecção de possível duplicidade.
+
+    PayExpenseRequest:
+      type: object
+      required: [paidFromAccountId]
+      properties:
+        paidFromAccountId:
+          type: string
+          format: uuid
+
+    DuplicateDetectionError:
+      type: object
+      required: [code, message, duplicateCandidate]
+      properties:
+        code:
+          type: string
+          enum: [POSSIBLE_DUPLICATE]
+        message:
+          type: string
+        duplicateCandidate:
+          type: object
+          required: [matchedTransactionId, fingerprint, detectedAt]
+          properties:
+            matchedTransactionId:
+              type: string
+              format: uuid
+            fingerprint:
+              type: string
+            detectedAt:
+              type: string
+              format: date-time
 
     UpsertPermissionRequest:
       type: object

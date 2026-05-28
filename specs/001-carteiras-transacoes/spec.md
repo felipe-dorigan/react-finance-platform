@@ -32,8 +32,17 @@
 
 ### Session 2026-05-28
 
+- Q: Qual identificador canônico deve ser usado para referência de branch/feature na documentação? -> A: Canonicalizar como 001-carteiras-transacoes em spec/plan/tasks e referências documentais.
+- Q: Em edição de transação/despesa, como aplicar a regra de duplicidade? -> A: Aplicar detector em edição somente quando valor, data, tipo ou vínculo principal (conta/cartão) forem alterados; se houver possível duplicidade, bloquear salvamento automático e exigir confirmação explícita.
 - Q: Qual baseline mínimo de testes de interface deve ser adotado para a feature? -> A: Adotar sete frentes mínimas: renderização de telas críticas, validação de formulário, fluxo feliz de criação de transação, regra visual de transferência, estados de loading/empty/error, proteção básica de permissão na UI e regressão de cálculo exibido na tela.
 - Q: A validação de formulário continua obrigatória dentro do baseline mínimo? -> A: Sim. A validação de formulário permanece obrigatória, incluindo campos obrigatórios, formato de e-mail, valor numérico válido, datas válidas, mensagens de erro por campo e bloqueio de envio inválido.
+- Q: Como alinhar o critério formal de desempenho após a redefinição do SC-005? -> A: O critério de p90 <= 2s em 50 execuções passa a ser rastreado por NFR-005 e SC-008; SC-005 permanece reservado aos estados de loading, empty state e erro de API.
+- Q: Como explicitar a visualização de vínculo entre transações, contas e cartões? -> A: Ao abrir transação de transferência, a interface deve mostrar claramente a conta de origem e a conta de destino. Transações são permitidas apenas para contas; na tela do cartão devem ser listados todos os registros vinculados ao cartão, incluindo despesas e créditos.
+- Q: Qual tempo máximo para processar operações de vínculo? -> A: O sistema deve processar operações de vínculo em menos de 1 segundo.
+- Q: Existe cobertura de testes fora do baseline mínimo a declarar como fora de escopo? -> A: Não. Todos os critérios de cobertura desta rodada devem ser aplicados na spec atual.
+- Q: Qual regra oficial de timezone deve valer para cálculo de período, vencimento/recorrência e timestamp de auditoria? -> A: Usar timezone da carteira (IANA) para regras de negócio; armazenar timestamps em UTC e converter na exibição.
+- Q: Como a plataforma deve modelar despesas de cartão sem violar o FR-004A (cartão não é origem/destino direto)? -> A: Despesas de cartão aparecem na listagem de despesas geral, podem ser filtradas por cartão, e quando pagas ficam com status paga, debitam a conta escolhida pelo usuário e permanecem no histórico.
+- Q: Quando o sistema detectar possível transação/despesa duplicada (mesmo valor, data, tipo e vínculo de conta/cartão em curto intervalo), qual comportamento padrão deve adotar? -> A: Bloquear criação automática e exigir confirmação explícita do usuário, mantendo ambos os registros apenas se o usuário confirmar.
 
 ## User Scenarios _(mandatory)_
 
@@ -51,6 +60,7 @@ Como dono da carteira, quero criar e gerenciar minhas transações (entrada, sa�
 2. **Given** uma carteira ativa com duas contas, **When** o usuário registra uma transferência entre contas da mesma carteira, **Then** o sistema debita a conta de origem, credita a conta de destino e mantém rastreabilidade do vínculo da transferência.
 3. **Given** uma transação de entrada pendente com recorrência mensal, **When** o usuário visualiza o histórico por período, **Then** a transação aparece com status pendente e metadados de recorrência corretos.
 4. **Given** o formulário de nova transação com tipo transferência selecionado, **When** o usuário preenche os dados da operação, **Then** o campo de período não é exibido e a operação é tratada como pontual.
+5. **Given** uma transação de transferência registrada, **When** o usuário abre os detalhes da transação, **Then** a interface mostra de forma explícita a conta de origem e a conta de destino.
 
 ---
 
@@ -71,6 +81,7 @@ Como dono da carteira, quero gerenciar contas e cartões para organizar melhor o
 5. **Given** uma conta com cartão vinculado, **When** o usuário tenta excluir a conta, **Then** o sistema bloqueia a exclusão até que não haja cartões vinculados.
 6. **Given** um cartão sem necessidade de preservação, **When** o usuário exclui o cartão definitivamente, **Then** o sistema exclui as despesas e estornos vinculados e recalcula os saldos afetados.
 7. **Given** uma conta com cartão vinculado, **When** o sistema bloqueia a exclusão da conta, **Then** a interface orienta troca ou desvinculação do cartão antes de concluir a exclusão.
+8. **Given** um cartão cadastrado, **When** o usuário acessa a tela do cartão, **Then** o sistema lista todos os registros vinculados a ele, incluindo despesas e créditos.
 
 ---
 
@@ -105,6 +116,7 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 - Exclusão definitiva de conta deve remover entradas, saídas e transferências em que a conta era origem ou destino, disparando recálculo completo dos indicadores financeiros da carteira.
 - Exclusão definitiva de cartão deve remover despesas e estornos vinculados e disparar recálculo completo dos indicadores financeiros da carteira.
 - Estorno parcial não pode exceder o valor líquido ainda estornável da despesa original do cartão.
+- Em edição de transação/despesa, o detector de duplicidade só deve ser acionado se houver mudança de valor, data, tipo ou vínculo principal (conta/cartão).
 
 ## Requirements _(mandatory)_
 
@@ -113,7 +125,9 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 - **FR-001**: O sistema MUST permitir ao usuário criar até duas carteiras financeiras por conta de usuário.
 - **FR-002**: O sistema MUST permitir CRUD de contas dentro de cada carteira, garantindo consistência de histórico financeiro da seguinte forma: arquivamento não altera lançamentos históricos; hard-delete remove vínculos permitidos e dispara recálculo completo da carteira atual.
 - **FR-003**: O sistema MUST permitir cadastro e manutenção de cartões vinculados à carteira.
+- **FR-003A**: Na tela de cartão, o sistema MUST listar todos os registros vinculados ao cartão, incluindo despesas e créditos (estornos).
 - **FR-004**: O sistema MUST permitir criar transações dos tipos entrada, saída e transferência.
+- **FR-004A**: Toda transação MUST ser vinculada a conta financeira; cartão MUST NOT ser origem ou destino direto de transação. Despesas de cartão MAY referenciar cartão para classificação e filtro, mantendo a movimentação financeira vinculada exclusivamente a conta.
 - **FR-005**: O sistema MUST restringir transferências para contas pertencentes à mesma carteira ativa.
 - **FR-006**: Cada transação MUST possuir status válido entre Efetivada e Pendente.
 - **FR-007**: Transações dos tipos entrada e saída MUST permitir configuração de período de recorrência entre Diário, Semanal, Mensal e Anual.
@@ -143,12 +157,21 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 - **FR-028A**: Quando a exclusão da conta for bloqueada por cartão vinculado, o sistema MUST orientar troca ou desvinculação prévia do cartão.
 - **FR-029**: Cartão MUST possuir conta de débito vinculada para pagamento da fatura.
 - **FR-030**: O usuário MUST poder alterar a conta de débito vinculada ao cartão.
+- **FR-030A**: Operações de criação e alteração de vínculo entre entidades financeiras (conta-cartão e registro-cartão) MUST ser processadas em menos de 1 segundo no ambiente padrão.
 - **FR-031**: O sistema MUST permitir cadastro de estorno parcial e total em despesas de cartão, registrando o estorno como entrada vinculada à despesa original.
+- **FR-032**: Cada carteira MUST possuir um identificador de timezone IANA; cálculos de período, recorrência, vencimento e fechamento diário MUST usar o timezone da carteira, enquanto timestamps persistidos MUST ser armazenados em UTC para auditoria e integração.
+- **FR-033**: A listagem de despesas MUST exibir despesas de cartão junto das demais despesas quando não houver filtro específico.
+- **FR-034**: Ao aplicar filtro por cartão na listagem de despesas, o sistema MUST retornar somente despesas vinculadas ao cartão selecionado.
+- **FR-035**: Quando uma despesa de cartão for marcada como paga, o sistema MUST atualizar o status para paga, debitar o valor na conta escolhida pelo usuário e manter o registro visível no histórico.
+- **FR-036**: O sistema MUST detectar possível duplicidade de transação/despesa quando houver coincidência de valor, data, tipo e vínculo principal (conta ou cartão) dentro da janela de 5 minutos, tanto na criação quanto na edição.
+- **FR-037**: Na edição, o detector de duplicidade MUST ser acionado apenas quando houver alteração de valor, data, tipo ou vínculo principal (conta ou cartão).
+- **FR-038**: Ao detectar possível duplicidade, o sistema MUST bloquear o salvamento automático e MUST solicitar confirmação explícita do usuário para manter ambos os registros.
+- **FR-039**: Se o usuário não confirmar, o sistema MUST cancelar a criação ou edição em andamento, sem alterar o registro já persistido.
 
 ### Key Entities _(include if feature involves data)_
 
 - **Usuário**: Representa a pessoa autenticada no sistema, podendo ser dono de carteiras e/ou convidado em carteiras de terceiros.
-- **Carteira**: Unidade de organização financeira que agrega contas, cartões, permissões de acesso e histórico de transações.
+- **Carteira**: Unidade de organização financeira que agrega contas, cartões, permissões de acesso, histórico de transações e configuração de timezone IANA para regras temporais.
 - **Permissão de Carteira**: Regra de acesso associada ao e-mail convidado dentro de uma carteira específica.
 - **Conta Financeira**: Origem/destino de valores dentro da carteira, utilizada em entradas, saídas e transferências.
 - **Cartão**: Instrumento financeiro cadastrado para associar gastos e organizar transações, sempre vinculado a uma conta de débito.
@@ -161,6 +184,7 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 - **NFR-002 Security & Privacy**: Convites por e-mail e permissões devem ser aplicados por carteira, sem expor dados de outras carteiras do mesmo usuário.
 - **NFR-003 Form Validation**: Formulários da feature MUST validar dados de entrada antes do envio e exibir mensagens de erro por campo quando houver inconsistência, cobrindo no mínimo campos obrigatórios, formato de e-mail, valor numérico válido e datas válidas.
 - **NFR-004 Minimum UI Test Coverage**: A feature MUST manter cobertura mínima de testes de interface para: renderização de telas críticas, fluxo feliz de criação de transação, regra visual de transferência, estados de loading/empty/error, proteção básica de permissão na UI e regressão de cálculo exibido na tela.
+- **NFR-005 Performance Budget**: As jornadas principais da feature MUST atender p90 <= 2s em 50 execuções no ambiente padrão, sem degradar a recomputação local de agregados da carteira.
 
 ## Success Criteria _(mandatory)_
 
@@ -173,12 +197,19 @@ Como dono da carteira, quero convidar outra pessoa por e-mail para acessar uma c
 - **SC-005**: 100% das listagens da feature cobrem e exibem corretamente estados de loading, empty state e erro de API.
 - **SC-006**: 100% dos cenários de usuário sem permissão na UI ocultam ações restritas ou exibem bloqueio visual claro.
 - **SC-007**: 100% dos cenários de atualização via formulário refletem os novos cálculos no resumo e na lista exibida.
+- **SC-008**: As jornadas principais da feature aprovam com p90 <= 2s em 50 execuções no ambiente padrão.
+- **SC-009**: 100% das operações de criação ou alteração de vínculo entre conta-cartão e registro-cartão completam em menos de 1 segundo no ambiente padrão.
+- **SC-010**: 100% dos cenários de exclusão de registros de negócio preservam os logs de auditoria sem alteração nem remoção.
+- **SC-011**: 100% dos cenários de arquivamento de conta/cartão preservam histórico e totais já registrados sem alteração retroativa.
+- **SC-012**: 100% das exclusões definitivas de conta removem entradas, saídas e transferências vinculadas (origem/destino) e disparam recálculo completo apenas da carteira atual.
 
 ## Assumptions
 
 - O usuário possui autenticação ativa antes de acessar os fluxos de carteira.
+- O identificador canônico da feature para referências documentais e automações é `001-carteiras-transacoes`.
 - O sistema considera no máximo duas carteiras por usuário como regra de negócio da versão atual.
 - Transferências entre carteiras diferentes estão fora de escopo desta feature.
 - O período (Diário, Semanal, Mensal, Anual) é tratado como recorrência apenas para transações de entrada e saída.
 - O dono da carteira é o único ator autorizado a excluir a carteira e alterar sua configuração estrutural.
 - O modelo de permissão segue três níveis fixos: leitura, leitura+edição e acesso total operacional.
+- Não há cobertura adicional de testes declarada como fora de escopo nesta rodada; todo o baseline e critérios definidos nesta spec devem ser aplicados.
