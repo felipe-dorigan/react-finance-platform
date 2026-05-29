@@ -162,18 +162,18 @@
 
 **Purpose**: Fechar quality gates, documentacao e validacoes transversais definidas pela constitution e pelo quickstart.
 
-- [ ] T081 [P] Criar teste de integracao da imutabilidade da auditoria apos hard-delete de negocio em tests/integration/audit/auditImmutability.test.tsx
-- [ ] T082 [P] Criar teste de integracao da separacao entre auditoria, telemetria e sinais de erro em tests/integration/observability/observabilitySeparation.test.tsx
-- [ ] T083 [P] Criar teste de validacao do budget de performance p90 <= 2s vinculado a NFR-005 e SC-008 em tests/integration/performance/criticalJourneysP90.test.ts
-- [ ] T084 [P] Criar teste de performance dedicado SC-009-FR-030A para operacoes de vinculo conta-cartao e registro-cartao (<1s) em tests/integration/performance/linkOperationsUnder1s.test.ts
-- [ ] T085 [P] Criar fixture do ambiente padrao para benchmark de vinculo e jornadas principais em tests/fixtures/performance/standardEnvironment.fixture.ts
-- [ ] T086 [P] Criar teste de integracao de acessibilidade basica por teclado, labels e mensagens de erro em tests/integration/a11y/criticalJourneysA11y.test.tsx
-- [ ] T087 Configurar o gate obrigatorio de CI com lint, typecheck, build e testes em .github/workflows/ci.yml
-- [ ] T088 Atualizar os passos de validacao e evidencias no quickstart da feature em specs/001-carteiras-transacoes/quickstart.md
-- [ ] T089 Executar a validacao final do quickstart e registrar o checklist de release em specs/001-carteiras-transacoes/checklists/quality.md
-- [ ] T090 [P] Criar teste de contrato da trilha de auditoria validando schema obrigatorio de eventos (walletId, autor, papel, acao, entidade, timestamp, changedFields) em tests/integration/audit/auditEventSchemaContract.test.ts
-- [ ] T091 [P] Criar teste de integracao transversal de modal-confirm dialog com foco preso e retorno ao gatilho original em tests/integration/a11y/modalFocusTrapAndReturn.test.tsx
-- [ ] T092 [P] Criar teste de integracao explicito do bloqueio de transferencia entre carteiras diferentes (FR-005) em tests/integration/transactions/crossWalletTransferGuard.test.tsx
+- [x] T081 [P] Criar teste de integracao da imutabilidade da auditoria apos hard-delete de negocio em tests/integration/audit/auditImmutability.test.tsx
+- [x] T082 [P] Criar teste de integracao da separacao entre auditoria, telemetria e sinais de erro em tests/integration/observability/observabilitySeparation.test.tsx
+- [x] T083 [P] Criar teste de validacao do budget de performance p90 <= 2s vinculado a NFR-005 e SC-008 em tests/integration/performance/criticalJourneysP90.test.ts
+- [x] T084 [P] Criar teste de performance dedicado SC-009-FR-030A para operacoes de vinculo conta-cartao e registro-cartao (<1s) em tests/integration/performance/linkOperationsUnder1s.test.ts
+- [x] T085 [P] Criar fixture do ambiente padrao para benchmark de vinculo e jornadas principais em tests/fixtures/performance/standardEnvironment.fixture.ts
+- [x] T086 [P] Criar teste de integracao de acessibilidade basica por teclado, labels e mensagens de erro em tests/integration/a11y/criticalJourneysA11y.test.tsx
+- [x] T087 Configurar o gate obrigatorio de CI com lint, typecheck, build e testes em .github/workflows/ci.yml
+- [x] T088 Atualizar os passos de validacao e evidencias no quickstart da feature em specs/001-carteiras-transacoes/quickstart.md
+- [x] T089 Executar a validacao final do quickstart e registrar o checklist de release em specs/001-carteiras-transacoes/checklists/quality.md
+- [x] T090 [P] Criar teste de contrato da trilha de auditoria validando schema obrigatorio de eventos (walletId, autor, papel, acao, entidade, timestamp, changedFields) em tests/integration/audit/auditEventSchemaContract.test.ts
+- [x] T091 [P] Criar teste de integracao transversal de modal-confirm dialog com foco preso e retorno ao gatilho original em tests/integration/a11y/modalFocusTrapAndReturn.test.tsx
+- [x] T092 [P] Criar teste de integracao explicito do bloqueio de transferencia entre carteiras diferentes (FR-005) em tests/integration/transactions/crossWalletTransferGuard.test.tsx
 
 ---
 

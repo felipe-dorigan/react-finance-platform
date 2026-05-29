@@ -147,3 +147,36 @@ Executar verificacoes de teclado/foco/semantica como qualidade adicional recomen
 - `npm run lint`
 - `npm run typecheck`
 - `npm run build`
+
+## Validacao final de release (Phase 6)
+
+1. Executar os gates obrigatorios locais:
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm run test
+```
+
+2. Validar os testes transversais da fase de polish:
+
+- `tests/integration/audit/auditImmutability.test.tsx`
+- `tests/integration/audit/auditEventSchemaContract.test.ts`
+- `tests/integration/observability/observabilitySeparation.test.tsx`
+- `tests/integration/performance/criticalJourneysP90.test.ts`
+- `tests/integration/performance/linkOperationsUnder1s.test.ts`
+- `tests/integration/a11y/criticalJourneysA11y.test.tsx`
+- `tests/integration/a11y/modalFocusTrapAndReturn.test.tsx`
+- `tests/integration/transactions/crossWalletTransferGuard.test.tsx`
+
+3. Evidenciar conformidade:
+
+- p90 <= 2s em `criticalJourneysP90.test.ts` (NFR-005 / SC-008)
+- operacoes de vinculo e registro de cartao < 1s em `linkOperationsUnder1s.test.ts` (FR-030A / SC-009)
+- imutabilidade de auditoria e separacao de observabilidade validadas nos testes de integracao
+- bloqueio explicito de transferencia entre carteiras diferentes validado para FR-005
+
+4. Confirmar pipeline remoto:
+
+- workflow `CI` em `.github/workflows/ci.yml` executando `lint`, `typecheck`, `build` e `test`.

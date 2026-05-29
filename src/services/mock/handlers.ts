@@ -197,6 +197,29 @@ export const handlers = [
     const payload = createTransactionRequestSchema.parse(await request.json());
     const walletId = String(params.walletId);
 
+    if (payload.type === 'transfer' && payload.sourceAccountId && payload.destinationAccountId) {
+      const sourceAccount = data.accounts.find((account) => account.id === payload.sourceAccountId);
+      const destinationAccount = data.accounts.find(
+        (account) => account.id === payload.destinationAccountId,
+      );
+
+      if (
+        sourceAccount &&
+        destinationAccount &&
+        sourceAccount.walletId !== destinationAccount.walletId
+      ) {
+        return jsonOk(
+          {
+            code: 'CROSS_WALLET_TRANSFER_BLOCKED',
+            message:
+              'Transferencia entre carteiras diferentes nao permitida. As contas devem pertencer a mesma carteira.',
+            errorCode: 'FR-005',
+          },
+          400,
+        );
+      }
+    }
+
     const duplicate = data.transactions.find((transaction) => {
       if (transaction.walletId !== walletId) {
         return false;

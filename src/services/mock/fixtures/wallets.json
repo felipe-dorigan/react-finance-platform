@@ -8,6 +8,15 @@
       "status": "active",
       "mainBalance": "12500.00",
       "projectedBalance": "13875.00"
+    },
+    {
+      "id": "wallet-002",
+      "ownerId": "user-001",
+      "name": "Carteira Secundaria",
+      "timezone": "America/Sao_Paulo",
+      "status": "active",
+      "mainBalance": "5000.00",
+      "projectedBalance": "5000.00"
     }
   ],
   "accounts": [
@@ -24,6 +33,13 @@
       "name": "Reserva",
       "status": "inactive",
       "balance": "2500.00"
+    },
+    {
+      "id": "account-003",
+      "walletId": "wallet-002",
+      "name": "Conta Poupanca",
+      "status": "active",
+      "balance": "5000.00"
     }
   ],
   "cards": [

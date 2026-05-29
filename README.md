@@ -107,6 +107,12 @@ As rotas de permissões e colaboração já possuem implementação funcional.
 - [tests/integration/a11y/us3-collaboration.a11y.test.tsx](tests/integration/a11y/us3-collaboration.a11y.test.tsx)
 - [tests/integration/observability/us3-collaboration-observability.test.tsx](tests/integration/observability/us3-collaboration-observability.test.tsx)
 
+## Validação Phase 6
+
+- Gate remoto de CI em [.github/workflows/ci.yml](.github/workflows/ci.yml) com lint, typecheck, build e testes.
+- Cobertura transversal final em auditoria, observabilidade, performance, acessibilidade e bloqueio FR-005.
+- Validação local concluída com `npm run lint`, `npm run typecheck`, `npm run build` e `npm run test`.
+
 ## Fluxo recomendado de desenvolvimento
 
 1. Iniciar com npm run dev

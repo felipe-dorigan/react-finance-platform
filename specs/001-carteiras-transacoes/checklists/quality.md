@@ -130,3 +130,9 @@
 
 - [x] CHK073 A spec e o plan documentam de forma clara a dependência de CI para bloquear merge quando o baseline mínimo de testes falhar? [Dependency, Constitution §Fluxo de Entrega, Plan §Constitution Check]
 - [x] CHK074 Há algum pressuposto implícito de cobertura de testes além do baseline mínimo que precise ser declarado explicitamente como fora de escopo desta rodada? [Assumption, Gap]
+
+## Release Validation Evidence (2026-05-29)
+
+- [x] Executado gate local completo: `npm run lint`, `npm run typecheck`, `npm run build`, `npm run test`.
+- [x] Registrada cobertura transversal da Phase 6 para auditoria, observabilidade, performance, acessibilidade e FR-005.
+- [x] Confirmada configuração do gate remoto em `.github/workflows/ci.yml` com lint, typecheck, build e testes.
