@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, useRouteError } from 'react-router-dom';
 import { AppShell } from '@/app/layout/AppShell';
 import { WalletGuard, AuthGuard } from './guards';
 import { WalletDashboardPage } from '@/features/transactions/pages/WalletDashboardPage';
+import { CollaboratorsPanel } from '@/features/permissions/components/CollaboratorsPanel';
 
 function PlaceholderPage({ title, description }: { title: string; description: string }) {
   return (
@@ -73,7 +74,7 @@ export const router = createBrowserRouter([
         path: 'wallets/:walletId/permissions',
         element: (
           <WalletGuard requiredRole="owner">
-            <PlaceholderPage title="Permissões" description="Convites e níveis de acesso da carteira." />
+            <CollaboratorsPanel />
           </WalletGuard>
         ),
       },

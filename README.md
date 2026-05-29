@@ -73,7 +73,7 @@ Rotas hoje disponíveis na aplicação:
 - /wallets/:walletId/transactions: tela base de transações
 - /wallets/:walletId/accounts: tela base de contas
 - /wallets/:walletId/cards: tela base de cartões
-- /wallets/:walletId/permissions: tela base de permissões
+- /wallets/:walletId/permissions: painel de colaboradores, convites e níveis de acesso
 - /wallet-not-found: fallback para carteira inexistente
 - /unauthorized: fallback para acesso sem permissão
 - /login: placeholder de autenticação
@@ -85,6 +85,7 @@ Exemplos de acesso local:
 - http://127.0.0.1:5173/wallets/wallet-001/transactions
 
 Observacao: algumas rotas ainda estão em modo placeholder enquanto as próximas phases não são concluídas.
+As rotas de permissões e colaboração já possuem implementação funcional.
 
 ## Estrutura principal
 
@@ -93,8 +94,18 @@ Observacao: algumas rotas ainda estão em modo placeholder enquanto as próximas
 - [src/app/router/routes.tsx](src/app/router/routes.tsx): mapa de rotas
 - [src/services/mock/handlers.ts](src/services/mock/handlers.ts): handlers MSW
 - [src/features](src/features): modulos por dominio
+- [src/features/permissions](src/features/permissions): serviços, enforcement e UI de colaboração por carteira
 - [src/schemas](src/schemas): schemas de validacao
 - [tests](tests): testes unitarios e de integracao
+
+## Cobertura US3 (colaboração)
+
+- [tests/unit/permissions/permissionMatrix.test.ts](tests/unit/permissions/permissionMatrix.test.ts)
+- [tests/integration/permissions/inviteFormValidation.test.tsx](tests/integration/permissions/inviteFormValidation.test.tsx)
+- [tests/integration/permissions/collaborationFlow.test.tsx](tests/integration/permissions/collaborationFlow.test.tsx)
+- [tests/integration/permissions/uiPermissionProtection.test.tsx](tests/integration/permissions/uiPermissionProtection.test.tsx)
+- [tests/integration/a11y/us3-collaboration.a11y.test.tsx](tests/integration/a11y/us3-collaboration.a11y.test.tsx)
+- [tests/integration/observability/us3-collaboration-observability.test.tsx](tests/integration/observability/us3-collaboration-observability.test.tsx)
 
 ## Fluxo recomendado de desenvolvimento
 

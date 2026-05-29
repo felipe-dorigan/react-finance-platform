@@ -45,6 +45,16 @@ type PermissionFixture = {
   roleLabel: string;
 };
 
+const permissionRoleLabelByRole: Record<string, string> = {
+  read: 'leitura',
+  edit: 'leitura+edicao',
+  operate: 'acesso_total_operacional',
+};
+
+function resolveRoleLabel(role: string): string {
+  return permissionRoleLabelByRole[role] ?? 'leitura';
+}
+
 type TransactionFixture = {
   id: string;
   walletId: string;
@@ -117,33 +127,56 @@ export const handlers = [
   http.post('/wallets/:walletId/permissions', async ({ request, params }) => {
     const payload = upsertPermissionRequestSchema.parse(await request.json());
     const walletId = String(params.walletId);
-    const existing = data.permissions.find((permission) => permission.walletId === walletId && permission.invitedEmail === payload.invitedEmail);
-
-    return jsonOk(
-      existing
-        ? { ...existing, role: payload.role }
-        : {
-            id: `perm-${data.permissions.length + 1}`,
-            walletId,
-            invitedEmail: payload.invitedEmail,
-            role: payload.role,
-            roleLabel: 'leitura',
-          },
-      existing ? 200 : 201,
+    const existingIndex = data.permissions.findIndex(
+      (permission) =>
+        permission.walletId === walletId &&
+        permission.invitedEmail.toLowerCase() === payload.invitedEmail.toLowerCase(),
     );
+
+    if (existingIndex >= 0) {
+      const updated = {
+        ...data.permissions[existingIndex],
+        role: payload.role,
+        roleLabel: resolveRoleLabel(payload.role),
+      };
+      data.permissions[existingIndex] = updated;
+      return jsonOk(updated, 200);
+    }
+
+    const created = {
+      id: `perm-${data.permissions.length + 1}`,
+      walletId,
+      invitedEmail: payload.invitedEmail,
+      role: payload.role,
+      roleLabel: resolveRoleLabel(payload.role),
+    };
+
+    data.permissions.push(created);
+    return jsonOk(created, 201);
   }),
   http.post('/wallets/:walletId/invites', async ({ request, params }) => {
     const payload = upsertPermissionRequestSchema.parse(await request.json());
-    return jsonOk(
-      {
-        id: `perm-${data.permissions.length + 1}`,
-        walletId: String(params.walletId),
-        invitedEmail: payload.invitedEmail,
-        role: payload.role,
-        roleLabel: 'leitura',
-      },
-      201,
+    const walletId = String(params.walletId);
+    const existing = data.permissions.find(
+      (permission) =>
+        permission.walletId === walletId &&
+        permission.invitedEmail.toLowerCase() === payload.invitedEmail.toLowerCase(),
     );
+
+    if (existing) {
+      return jsonOk(existing, 200);
+    }
+
+    const created = {
+      id: `perm-${data.permissions.length + 1}`,
+      walletId,
+      invitedEmail: payload.invitedEmail,
+      role: payload.role,
+      roleLabel: resolveRoleLabel(payload.role),
+    };
+
+    data.permissions.push(created);
+    return jsonOk(created, 201);
   }),
   http.get('/wallets/:walletId/audit-events', ({ params }) => {
     return jsonOk(data.auditEvents.filter(() => params.walletId));

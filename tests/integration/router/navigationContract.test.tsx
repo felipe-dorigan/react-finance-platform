@@ -1,14 +1,26 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { router } from '@/app/router/routes';
 
 function renderRoute(initialEntries: string[]) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
   const memoryRouter = createMemoryRouter(router.routes, {
     initialEntries,
   });
 
-  return render(<RouterProvider router={memoryRouter} />);
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={memoryRouter} />
+    </QueryClientProvider>,
+  );
 }
 
 describe('navigation contract', () => {

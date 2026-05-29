@@ -2,30 +2,24 @@ import type { ReactNode } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import type { PermissionRole, WalletPermission } from '@/features/shared/types/domain';
 import { getMockSession } from '@/features/wallets/session/sessionService';
+import {
+  hasRequiredPermissionRole,
+  resolveSessionWalletRole,
+  type WalletActorRole,
+} from '@/features/permissions/permissionEnforcement';
 import { getMockWallet } from '@/services/mock/handlers';
 
-const roleWeight: Record<PermissionRole | 'owner', number> = {
-  read: 1,
-  edit: 2,
-  operate: 3,
-  owner: 4,
-};
-
 export function canAccessWallet(requiredRole: PermissionRole | 'owner', permission: WalletPermission | null | undefined): boolean {
-  if (!permission) {
-    return false;
-  }
-
-  if (permission.role === 'operate' || permission.role === 'edit' || permission.role === 'read') {
-    return roleWeight[permission.role] >= roleWeight[requiredRole];
-  }
-
-  return false;
+  return hasRequiredPermissionRole(requiredRole, permission?.role ?? null);
 }
 
-export function hasRouteAccess(requiredRole: PermissionRole | 'owner'): boolean {
+export function hasRouteAccess(requiredRole: PermissionRole | 'owner', currentRole?: WalletActorRole | null): boolean {
+  if (currentRole) {
+    return hasRequiredPermissionRole(requiredRole, currentRole);
+  }
+
   const session = getMockSession();
-  return roleWeight[session.role] >= roleWeight[requiredRole];
+  return hasRequiredPermissionRole(requiredRole, session.role);
 }
 
 type GuardProps = {
@@ -37,12 +31,14 @@ export function WalletGuard({ children, requiredRole = 'read' }: GuardProps) {
   const location = useLocation();
   const params = useParams();
   const walletId = params.walletId;
+  const session = getMockSession();
 
   if (!walletId || !getMockWallet(walletId)) {
     return <Navigate to="/wallet-not-found" replace state={{ from: location.pathname }} />;
   }
 
-  if (!hasRouteAccess(requiredRole)) {
+  const currentRole = resolveSessionWalletRole(walletId, session);
+  if (!hasRouteAccess(requiredRole, currentRole)) {
     return <Navigate to="/unauthorized" replace state={{ from: location.pathname }} />;
   }
 

@@ -138,21 +138,21 @@
 
 ### Tests for User Story 3
 
-- [ ] T068 [P] [US3] Criar teste unitario da matriz de permissao e do mapeamento leitura-edit-operate em tests/unit/permissions/permissionMatrix.test.ts
-- [ ] T069 [P] [US3] Criar teste de integracao do formulario de convite com validacao de e-mail em tests/integration/permissions/inviteFormValidation.test.tsx
-- [ ] T070 [P] [US3] Criar teste de integracao do upsert de convite e atualizacao imediata de permissao em tests/integration/permissions/collaborationFlow.test.tsx
-- [ ] T071 [P] [US3] Criar teste de integracao da protecao basica de permissao na UI em tests/integration/permissions/uiPermissionProtection.test.tsx
-- [ ] T072 [P] [US3] Criar teste de integracao de acessibilidade da jornada de colaboracao incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us3-collaboration.a11y.test.tsx
-- [ ] T073 [P] [US3] Criar teste de integracao de telemetria e ErrorSignal em convites, mudancas de permissao e bloqueios visuais com erro visivel ao usuario em tests/integration/observability/us3-collaboration-observability.test.tsx
+- [x] T068 [P] [US3] Criar teste unitario da matriz de permissao e do mapeamento leitura-edit-operate em tests/unit/permissions/permissionMatrix.test.ts
+- [x] T069 [P] [US3] Criar teste de integracao do formulario de convite com validacao de e-mail em tests/integration/permissions/inviteFormValidation.test.tsx
+- [x] T070 [P] [US3] Criar teste de integracao do upsert de convite e atualizacao imediata de permissao em tests/integration/permissions/collaborationFlow.test.tsx
+- [x] T071 [P] [US3] Criar teste de integracao da protecao basica de permissao na UI em tests/integration/permissions/uiPermissionProtection.test.tsx
+- [x] T072 [P] [US3] Criar teste de integracao de acessibilidade da jornada de colaboracao incluindo foco preso em modal-confirm dialog e retorno ao elemento de origem em tests/integration/a11y/us3-collaboration.a11y.test.tsx
+- [x] T073 [P] [US3] Criar teste de integracao de telemetria e ErrorSignal em convites, mudancas de permissao e bloqueios visuais com erro visivel ao usuario em tests/integration/observability/us3-collaboration-observability.test.tsx
 
 ### Implementation for User Story 3
 
-- [ ] T075 [P] [US3] Implementar os servicos de convite e permissao por carteira em src/features/permissions/permissionService.ts e src/features/permissions/invitationService.ts
-- [ ] T076 [US3] Implementar o painel de colaboradores e niveis de acesso em src/features/permissions/components/CollaboratorsPanel.tsx
-- [ ] T077 [US3] Implementar enforcement de guardas e bloqueios visuais por papel em src/features/permissions/permissionEnforcement.ts e src/app/router/guards.tsx
-- [ ] T078 [US3] Integrar auditoria para convites e alteracoes de permissao em src/features/permissions/permissionsAuditBridge.ts
-- [ ] T079 [US3] Implementar ajustes de acessibilidade da jornada de colaboracao em src/features/permissions/components/CollaboratorsPanel.tsx
-- [ ] T080 [US3] Instrumentar TelemetryEvent e ErrorSignal em convites, mudancas de permissao e bloqueios visuais com erro visivel ao usuario em src/features/permissions/permissionsObservability.ts e src/features/permissions/components/CollaboratorsPanel.tsx
+- [x] T075 [P] [US3] Implementar os servicos de convite e permissao por carteira em src/features/permissions/permissionService.ts e src/features/permissions/invitationService.ts
+- [x] T076 [US3] Implementar o painel de colaboradores e niveis de acesso em src/features/permissions/components/CollaboratorsPanel.tsx
+- [x] T077 [US3] Implementar enforcement de guardas e bloqueios visuais por papel em src/features/permissions/permissionEnforcement.ts e src/app/router/guards.tsx
+- [x] T078 [US3] Integrar auditoria para convites e alteracoes de permissao em src/features/permissions/permissionsAuditBridge.ts
+- [x] T079 [US3] Implementar ajustes de acessibilidade da jornada de colaboracao em src/features/permissions/components/CollaboratorsPanel.tsx
+- [x] T080 [US3] Instrumentar TelemetryEvent e ErrorSignal em convites, mudancas de permissao e bloqueios visuais com erro visivel ao usuario em src/features/permissions/permissionsObservability.ts e src/features/permissions/components/CollaboratorsPanel.tsx
 
 **Checkpoint**: US3 pronta e validavel de forma independente.
 
